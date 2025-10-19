@@ -1,14 +1,19 @@
 # ====================
-# General
+# MacOS
 # ====================
 .DS_Store
-Thumbs.db
+.AppleDouble
+.LSOverride
+
+# ====================
+# General
+# ====================
 *.log
-*.user
-*.suo
 *.tmp
 *.bak
 *.swp
+*.user
+*.suo
 
 # ====================
 # Build Folders
@@ -16,6 +21,7 @@ Thumbs.db
 bin/
 obj/
 out/
+artifacts/
 
 # ====================
 # Visual Studio
@@ -24,6 +30,11 @@ out/
 *.vcxproj.user
 *.sln.DotSettings.user
 *.dbmdl
+*.pdb
+*.cache
+*.ide
+*.resharper
+*.DotSettings.user
 
 # ====================
 # Rider
@@ -39,7 +50,6 @@ out/
 packages/
 project.lock.json
 project.fragment.lock.json
-artifacts/
 
 # ====================
 # .NET MAUI / Xamarin
@@ -53,11 +63,11 @@ artifacts/
 *.appx
 *.ipa
 *.xcuserstate
-*.dotnet/
 .maui/
+*.dotnet/
 
 # ====================
-# Others
+# VS Code
 # ====================
 .vscode/
-*.DS_Store
+.history/

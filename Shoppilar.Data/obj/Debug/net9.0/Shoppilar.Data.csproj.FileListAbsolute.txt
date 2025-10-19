@@ -16,15 +16,3 @@
 /Users/brunoferreira/Projetos/Shoppilars/Shoppilar.Data/obj/Debug/net9.0/refint/Shoppilar.Data.dll
 /Users/brunoferreira/Projetos/Shoppilars/Shoppilar.Data/obj/Debug/net9.0/Shoppilar.Data.pdb
 /Users/brunoferreira/Projetos/Shoppilars/Shoppilar.Data/obj/Debug/net9.0/ref/Shoppilar.Data.dll
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/bin/Debug/net9.0/Shoppilar.Data.deps.json
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/bin/Debug/net9.0/Shoppilar.Data.dll
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/bin/Debug/net9.0/Shoppilar.Data.pdb
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/obj/Debug/net9.0/Shoppilar.Data.csproj.AssemblyReference.cache
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/obj/Debug/net9.0/Shoppilar.Data.GeneratedMSBuildEditorConfig.editorconfig
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/obj/Debug/net9.0/Shoppilar.Data.AssemblyInfoInputs.cache
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/obj/Debug/net9.0/Shoppilar.Data.AssemblyInfo.cs
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/obj/Debug/net9.0/Shoppilar.Data.csproj.CoreCompileInputs.cache
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/obj/Debug/net9.0/Shoppilar.Data.dll
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/obj/Debug/net9.0/refint/Shoppilar.Data.dll
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/obj/Debug/net9.0/Shoppilar.Data.pdb
-/Users/brunoferreira/Projetos/Shoppilar/Shoppilar.Data/obj/Debug/net9.0/ref/Shoppilar.Data.dll
