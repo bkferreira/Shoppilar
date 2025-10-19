@@ -27,19 +27,22 @@ public class CityService(IRepo<City> repository) : ICityService
         return responses;
     }
 
-    public async Task<PaginatedResponse<CityResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<CityResponse>> GetPagedProjectionAsync(
         Expression<Func<City, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<CityResponse>(
-            items.Select(u => new CityResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: CityResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<CityResponse>(items, totalCount);
+
         return responses;
     }
 }

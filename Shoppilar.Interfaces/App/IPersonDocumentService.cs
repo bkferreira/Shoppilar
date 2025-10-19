@@ -15,9 +15,8 @@ public interface IPersonDocumentService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<PersonDocumentResponse>> GetPagedAsync(
+    Task<PaginatedResponse<PersonDocumentResponse>> GetPagedProjectionAsync(
         Expression<Func<PersonDocument, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

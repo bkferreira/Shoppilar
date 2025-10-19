@@ -29,19 +29,22 @@ public class AdPromotionService(IRepo<AdPromotion> repository) : IAdPromotionSer
         return responses;
     }
 
-    public async Task<PaginatedResponse<AdPromotionResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<AdPromotionResponse>> GetPagedProjectionAsync(
         Expression<Func<AdPromotion, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<AdPromotionResponse>(
-            items.Select(u => new AdPromotionResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: AdPromotionResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<AdPromotionResponse>(items, totalCount);
+
         return responses;
     }
 

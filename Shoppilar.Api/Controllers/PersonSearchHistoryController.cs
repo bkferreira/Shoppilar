@@ -10,14 +10,14 @@ namespace Shoppilar.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PersonSearchHistoryController(IPersonSearchHistoryService PersonSearchHistoryService) : ControllerBase
+public class PersonSearchHistoryController(IPersonSearchHistoryService service) : ControllerBase
 {
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<BaseResponse<PersonSearchHistoryResponse?>>> GetById(Guid id,
         string? includeProperties,
         CancellationToken cancellationToken)
     {
-        var result = await PersonSearchHistoryService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+        var result = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
         if (result == null)
             return NotFound(new BaseResponse<PersonSearchHistoryResponse?>(false, "Histórico não encontrado"));
 
@@ -31,7 +31,7 @@ public class PersonSearchHistoryController(IPersonSearchHistoryService PersonSea
     {
         var predicate = request.Expression.DeserializeLambdaExpression<PersonSearchHistory>();
         var includes = request.IncludeProperties;
-        var result = await PersonSearchHistoryService.GetAllAsync(predicate, includes, cancellationToken);
+        var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
         if (!result.Any())
             return NotFound(new BaseResponse<List<PersonSearchHistoryResponse>>(false, "Nenhum histórico encontrado"));
@@ -40,22 +40,24 @@ public class PersonSearchHistoryController(IPersonSearchHistoryService PersonSea
     }
 
     [HttpPost("paged")]
-    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonSearchHistoryResponse>>>> GetPaged(
+    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonSearchHistoryResponse>>>> GetPagedProjection(
         [FromBody] GetPagedRequest request,
         CancellationToken cancellationToken)
     {
-        var predicate = request.Expression.DeserializeLambdaExpression<PersonSearchHistory>();
-        var includes = request.IncludeProperties;
-        var result =
-            await PersonSearchHistoryService.GetPagedAsync(predicate, includes, request.Page, request.PageSize,
-                cancellationToken);
+        var predicate = request.Expression?.DeserializeLambdaExpression<PersonSearchHistory>();
+
+        var result = await service.GetPagedProjectionAsync(
+            predicate,
+            page: request.Page,
+            pageSize: request.PageSize,
+            cancellationToken: cancellationToken
+        );
 
         if (!result.Items.Any())
             return NotFound(
-                new BaseResponse<PaginatedResponse<PersonSearchHistoryResponse>>(false, "Nenhum histórico encontrado"));
+                new BaseResponse<PaginatedResponse<PersonSearchHistoryResponse>>(false, Messages.NoneFound));
 
-        return Ok(
-            new BaseResponse<PaginatedResponse<PersonSearchHistoryResponse>>(true, "Históricos encontrados", result));
+        return Ok(new BaseResponse<PaginatedResponse<PersonSearchHistoryResponse>>(true, Messages.Found, result));
     }
 
     [HttpPost]
@@ -63,7 +65,7 @@ public class PersonSearchHistoryController(IPersonSearchHistoryService PersonSea
         [FromBody] PersonSearchHistoryInput input,
         CancellationToken cancellationToken)
     {
-        var result = await PersonSearchHistoryService.InsertAsync(input, cancellationToken);
+        var result = await service.InsertAsync(input, cancellationToken);
         if (!result.Success)
             return BadRequest(new BaseResponse<PersonSearchHistoryResponse?>(false, "Falha ao criar histórico"));
 
@@ -74,7 +76,7 @@ public class PersonSearchHistoryController(IPersonSearchHistoryService PersonSea
     public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
     {
         var success =
-            await PersonSearchHistoryService.HardDeleteAsync(new PersonSearchHistoryInput { Id = id }, cancellationToken);
+            await service.HardDeleteAsync(new PersonSearchHistoryInput { Id = id }, cancellationToken);
         if (!success) return NotFound(new BaseResponse<bool>(false, "Histórico não encontrado"));
 
         return Ok(new BaseResponse<bool>(true, "Histórico deletado", true));
@@ -84,7 +86,7 @@ public class PersonSearchHistoryController(IPersonSearchHistoryService PersonSea
     public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<PersonSearchHistoryInput> inputs,
         CancellationToken cancellationToken)
     {
-        var success = await PersonSearchHistoryService.HardDeleteAsync(inputs, cancellationToken);
+        var success = await service.HardDeleteAsync(inputs, cancellationToken);
         if (!success) return NotFound(new BaseResponse<bool>(false, "Nenhum histórico encontrado para deletar"));
 
         return Ok(new BaseResponse<bool>(true, "Históricos deletados", true));

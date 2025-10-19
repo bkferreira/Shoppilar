@@ -14,9 +14,8 @@ public interface ICityService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<CityResponse>> GetPagedAsync(
+    Task<PaginatedResponse<CityResponse>> GetPagedProjectionAsync(
         Expression<Func<City, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

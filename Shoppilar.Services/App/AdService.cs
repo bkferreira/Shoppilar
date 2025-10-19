@@ -29,22 +29,6 @@ public class AdService(IRepo<Ad> repository) : IAdService
         return responses;
     }
 
-    public async Task<PaginatedResponse<AdResponse>> GetPagedAsync(
-        Expression<Func<Ad, bool>>? predicate = null,
-        string? includeProperties = null,
-        int page = 1,
-        int pageSize = 10,
-        CancellationToken cancellationToken = default)
-    {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<AdResponse>(
-            items.Select(u => new AdResponse(u)).ToList(),
-            totalCount
-        );
-        return responses;
-    }
-    
     public async Task<PaginatedResponse<AdResponse>> GetPagedProjectionAsync(
         Expression<Func<Ad, bool>>? predicate = null,
         int page = 1,

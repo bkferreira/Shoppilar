@@ -10,13 +10,13 @@ namespace Shoppilar.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PersonSocialMediaController(IPersonSocialMediaService PersonSocialMediaService) : ControllerBase
+public class PersonSocialMediaController(IPersonSocialMediaService service) : ControllerBase
 {
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<PersonSocialMediaResponse?>> GetAsync(Guid id, string? includeProperties,
         CancellationToken cancellationToken)
     {
-        var result = await PersonSocialMediaService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+        var result = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
         if (result == null) return NotFound("Rede social não encontrada");
         return Ok(result);
     }
@@ -27,27 +27,35 @@ public class PersonSocialMediaController(IPersonSocialMediaService PersonSocialM
     {
         var predicate = request.Expression.DeserializeLambdaExpression<PersonSocialMedia>();
         var includes = request.IncludeProperties;
-        var result = await PersonSocialMediaService.GetAllAsync(predicate, includes, cancellationToken);
+        var result = await service.GetAllAsync(predicate, includes, cancellationToken);
         return Ok(result);
     }
 
-    [HttpPost("GetPaged")]
-    public async Task<ActionResult<PaginatedResponse<PersonSocialMediaResponse>>> GetPaged(
-        [FromBody] GetPagedRequest request, CancellationToken cancellationToken)
+    [HttpPost("paged")]
+    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonSocialMediaResponse>>>> GetPagedProjection(
+        [FromBody] GetPagedRequest request,
+        CancellationToken cancellationToken)
     {
-        var predicate = request.Expression.DeserializeLambdaExpression<PersonSocialMedia>();
-        var includes = request.IncludeProperties;
-        var result =
-            await PersonSocialMediaService.GetPagedAsync(predicate, includes, request.Page, request.PageSize,
-                cancellationToken);
-        return Ok(result);
+        var predicate = request.Expression?.DeserializeLambdaExpression<PersonSocialMedia>();
+
+        var result = await service.GetPagedProjectionAsync(
+            predicate,
+            page: request.Page,
+            pageSize: request.PageSize,
+            cancellationToken: cancellationToken
+        );
+
+        if (!result.Items.Any())
+            return NotFound(new BaseResponse<PaginatedResponse<PersonSocialMediaResponse>>(false, Messages.NoneFound));
+
+        return Ok(new BaseResponse<PaginatedResponse<PersonSocialMediaResponse>>(true, Messages.Found, result));
     }
 
     [HttpPost]
     public async Task<ActionResult<PersonSocialMediaResponse?>> Insert([FromBody] PersonSocialMediaInput input,
         CancellationToken cancellationToken)
     {
-        var result = await PersonSocialMediaService.InsertAsync(input, cancellationToken);
+        var result = await service.InsertAsync(input, cancellationToken);
         return Ok(result);
     }
 
@@ -56,7 +64,7 @@ public class PersonSocialMediaController(IPersonSocialMediaService PersonSocialM
         [FromBody] List<PersonSocialMediaInput> inputs,
         CancellationToken cancellationToken)
     {
-        var result = await PersonSocialMediaService.InsertAsync(inputs, cancellationToken);
+        var result = await service.InsertAsync(inputs, cancellationToken);
         return Ok(result);
     }
 
@@ -64,7 +72,7 @@ public class PersonSocialMediaController(IPersonSocialMediaService PersonSocialM
     public async Task<ActionResult<PersonSocialMediaResponse?>> Update([FromBody] PersonSocialMediaInput input,
         CancellationToken cancellationToken)
     {
-        var result = await PersonSocialMediaService.UpdateAsync(input, cancellationToken);
+        var result = await service.UpdateAsync(input, cancellationToken);
         return Ok(result);
     }
 
@@ -73,7 +81,7 @@ public class PersonSocialMediaController(IPersonSocialMediaService PersonSocialM
         [FromBody] List<PersonSocialMediaInput> inputs,
         CancellationToken cancellationToken)
     {
-        var result = await PersonSocialMediaService.UpdateAsync(inputs, cancellationToken);
+        var result = await service.UpdateAsync(inputs, cancellationToken);
         return Ok(result);
     }
 
@@ -81,7 +89,7 @@ public class PersonSocialMediaController(IPersonSocialMediaService PersonSocialM
     public async Task<ActionResult<bool>> Delete(Guid id, CancellationToken cancellationToken)
     {
         var result =
-            await PersonSocialMediaService.HardDeleteAsync(new PersonSocialMediaInput { Id = id }, cancellationToken);
+            await service.HardDeleteAsync(new PersonSocialMediaInput { Id = id }, cancellationToken);
         return Ok(result);
     }
 
@@ -89,7 +97,7 @@ public class PersonSocialMediaController(IPersonSocialMediaService PersonSocialM
     public async Task<ActionResult<bool>> DeleteBatch([FromBody] List<PersonSocialMediaInput> inputs,
         CancellationToken cancellationToken)
     {
-        var result = await PersonSocialMediaService.HardDeleteAsync(inputs, cancellationToken);
+        var result = await service.HardDeleteAsync(inputs, cancellationToken);
         return Ok(result);
     }
 
@@ -97,7 +105,7 @@ public class PersonSocialMediaController(IPersonSocialMediaService PersonSocialM
     public async Task<ActionResult<int>> Count([FromBody] GetAllRequest request, CancellationToken cancellationToken)
     {
         var predicate = request.Expression.DeserializeLambdaExpression<PersonSocialMedia>();
-        var result = await PersonSocialMediaService.CountAsync(predicate, cancellationToken);
+        var result = await service.CountAsync(predicate, cancellationToken);
         return Ok(result);
     }
 }

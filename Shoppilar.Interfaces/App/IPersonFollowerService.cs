@@ -15,9 +15,8 @@ public interface IPersonFollowerService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<PersonFollowerResponse>> GetPagedAsync(
+    Task<PaginatedResponse<PersonFollowerResponse>> GetPagedProjectionAsync(
         Expression<Func<PersonFollower, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

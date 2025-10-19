@@ -30,19 +30,22 @@ public class PersonSearchHistoryService(IRepo<PersonSearchHistory> repository) :
         return responses;
     }
 
-    public async Task<PaginatedResponse<PersonSearchHistoryResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<PersonSearchHistoryResponse>> GetPagedProjectionAsync(
         Expression<Func<PersonSearchHistory, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<PersonSearchHistoryResponse>(
-            items.Select(u => new PersonSearchHistoryResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: PersonSearchHistoryResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<PersonSearchHistoryResponse>(items, totalCount);
+
         return responses;
     }
 
@@ -60,7 +63,8 @@ public class PersonSearchHistoryService(IRepo<PersonSearchHistory> repository) :
         await repository.InsertAsync(entity, cancellationToken);
 
         var response =
-            new BaseResponse<PersonSearchHistoryResponse?>(true, Messages.Created, new PersonSearchHistoryResponse(entity));
+            new BaseResponse<PersonSearchHistoryResponse?>(true, Messages.Created,
+                new PersonSearchHistoryResponse(entity));
 
         return response;
     }

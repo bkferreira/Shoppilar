@@ -10,13 +10,13 @@ namespace Shoppilar.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PersonDocumentController(IPersonDocumentService PersonDocumentService) : ControllerBase
+public class PersonDocumentController(IPersonDocumentService service) : ControllerBase
 {
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<BaseResponse<PersonDocumentResponse?>>> GetById(Guid id, string? includeProperties,
         CancellationToken cancellationToken)
     {
-        var doc = await PersonDocumentService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+        var doc = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
         if (doc == null) return NotFound(new BaseResponse<PersonDocumentResponse?>(false, "Documento não encontrado"));
 
         return Ok(new BaseResponse<PersonDocumentResponse?>(true, "Documento encontrado", doc));
@@ -28,7 +28,7 @@ public class PersonDocumentController(IPersonDocumentService PersonDocumentServi
     {
         var predicate = request.Expression.DeserializeLambdaExpression<PersonDocument>();
         var includes = request.IncludeProperties;
-        var result = await PersonDocumentService.GetAllAsync(predicate, includes, cancellationToken);
+        var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
         if (!result.Any())
             return NotFound(new BaseResponse<List<PersonDocumentResponse>>(false, "Nenhum documento encontrado"));
@@ -37,28 +37,30 @@ public class PersonDocumentController(IPersonDocumentService PersonDocumentServi
     }
 
     [HttpPost("paged")]
-    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonDocumentResponse>>>> GetPaged(
+    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonDocumentResponse>>>> GetPagedProjection(
         [FromBody] GetPagedRequest request,
         CancellationToken cancellationToken)
     {
-        var predicate = request.Expression.DeserializeLambdaExpression<PersonDocument>();
-        var includes = request.IncludeProperties;
-        var result =
-            await PersonDocumentService.GetPagedAsync(predicate, includes, request.Page, request.PageSize,
-                cancellationToken);
+        var predicate = request.Expression?.DeserializeLambdaExpression<PersonDocument>();
+
+        var result = await service.GetPagedProjectionAsync(
+            predicate,
+            page: request.Page,
+            pageSize: request.PageSize,
+            cancellationToken: cancellationToken
+        );
 
         if (!result.Items.Any())
-            return NotFound(
-                new BaseResponse<PaginatedResponse<PersonDocumentResponse>>(false, "Nenhum documento encontrado"));
+            return NotFound(new BaseResponse<PaginatedResponse<PersonDocumentResponse>>(false, Messages.NoneFound));
 
-        return Ok(new BaseResponse<PaginatedResponse<PersonDocumentResponse>>(true, "Documentos encontrados", result));
+        return Ok(new BaseResponse<PaginatedResponse<PersonDocumentResponse>>(true, Messages.Found, result));
     }
 
     [HttpPost]
     public async Task<ActionResult<BaseResponse<PersonDocumentResponse?>>> Insert([FromBody] PersonDocumentInput input,
         CancellationToken cancellationToken)
     {
-        var result = await PersonDocumentService.InsertAsync(input, cancellationToken);
+        var result = await service.InsertAsync(input, cancellationToken);
         if (!result.Success)
             return BadRequest(new BaseResponse<PersonDocumentResponse?>(false, "Falha ao criar documento"));
 
@@ -70,7 +72,7 @@ public class PersonDocumentController(IPersonDocumentService PersonDocumentServi
         [FromBody] List<PersonDocumentInput> inputs,
         CancellationToken cancellationToken)
     {
-        var result = await PersonDocumentService.InsertAsync(inputs, cancellationToken);
+        var result = await service.InsertAsync(inputs, cancellationToken);
         if (!result.Success)
             return BadRequest(new BaseResponse<List<PersonDocumentResponse>>(false, "Falha ao criar documentos"));
 
@@ -85,7 +87,7 @@ public class PersonDocumentController(IPersonDocumentService PersonDocumentServi
         if (id != input.Id)
             return BadRequest(new BaseResponse<PersonDocumentResponse?>(false, "ID inválido"));
 
-        var result = await PersonDocumentService.UpdateAsync(input, cancellationToken);
+        var result = await service.UpdateAsync(input, cancellationToken);
         if (!result.Success)
             return NotFound(
                 new BaseResponse<PersonDocumentResponse?>(false, result.Message ?? "Documento não encontrado"));
@@ -98,7 +100,7 @@ public class PersonDocumentController(IPersonDocumentService PersonDocumentServi
         [FromBody] List<PersonDocumentInput> inputs,
         CancellationToken cancellationToken)
     {
-        var result = await PersonDocumentService.UpdateAsync(inputs, cancellationToken);
+        var result = await service.UpdateAsync(inputs, cancellationToken);
         if (!result.Success)
             return NotFound(
                 new BaseResponse<List<PersonDocumentResponse>>(false, result.Message ?? "Nenhum documento encontrado"));
@@ -109,7 +111,7 @@ public class PersonDocumentController(IPersonDocumentService PersonDocumentServi
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var success = await PersonDocumentService.HardDeleteAsync(new PersonDocumentInput { Id = id }, cancellationToken);
+        var success = await service.HardDeleteAsync(new PersonDocumentInput { Id = id }, cancellationToken);
         if (!success) return NotFound(new BaseResponse<bool>(false, "Documento não encontrado"));
 
         return Ok(new BaseResponse<bool>(true, "Documento deletado", true));
@@ -119,7 +121,7 @@ public class PersonDocumentController(IPersonDocumentService PersonDocumentServi
     public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<PersonDocumentInput> inputs,
         CancellationToken cancellationToken)
     {
-        var success = await PersonDocumentService.HardDeleteAsync(inputs, cancellationToken);
+        var success = await service.HardDeleteAsync(inputs, cancellationToken);
         if (!success) return NotFound(new BaseResponse<bool>(false, "Nenhum documento encontrado para deletar"));
 
         return Ok(new BaseResponse<bool>(true, "Documentos deletados", true));
@@ -130,7 +132,7 @@ public class PersonDocumentController(IPersonDocumentService PersonDocumentServi
         CancellationToken cancellationToken)
     {
         var predicate = request.Expression.DeserializeLambdaExpression<PersonDocument>();
-        var total = await PersonDocumentService.CountAsync(predicate, cancellationToken);
+        var total = await service.CountAsync(predicate, cancellationToken);
 
         return Ok(new BaseResponse<int>(true, "Contagem realizada", total));
     }

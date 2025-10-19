@@ -15,9 +15,8 @@ public interface IPersonSocialMediaService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<PersonSocialMediaResponse>> GetPagedAsync(
+    Task<PaginatedResponse<PersonSocialMediaResponse>> GetPagedProjectionAsync(
         Expression<Func<PersonSocialMedia, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

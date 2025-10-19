@@ -15,13 +15,6 @@ public interface IAdService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<AdResponse>> GetPagedAsync(
-        Expression<Func<Ad, bool>>? predicate = null,
-        string? includeProperties = null,
-        int page = 1,
-        int pageSize = 10,
-        CancellationToken cancellationToken = default);
-
     Task<PaginatedResponse<AdResponse>> GetPagedProjectionAsync(
         Expression<Func<Ad, bool>>? predicate = null,
         int page = 1,

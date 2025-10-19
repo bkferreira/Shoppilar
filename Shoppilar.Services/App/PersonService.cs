@@ -29,19 +29,22 @@ public class PersonService(IRepo<Person> repository) : IPersonService
         return responses;
     }
 
-    public async Task<PaginatedResponse<PersonResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<PersonResponse>> GetPagedProjectionAsync(
         Expression<Func<Person, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<PersonResponse>(
-            items.Select(u => new PersonResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: PersonResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<PersonResponse>(items, totalCount);
+
         return responses;
     }
 

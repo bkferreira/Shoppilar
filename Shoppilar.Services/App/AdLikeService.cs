@@ -29,19 +29,22 @@ public class AdLikeService(IRepo<AdLike> repository) : IAdLikeService
         return responses;
     }
 
-    public async Task<PaginatedResponse<AdLikeResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<AdLikeResponse>> GetPagedProjectionAsync(
         Expression<Func<AdLike, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<AdLikeResponse>(
-            items.Select(u => new AdLikeResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: AdLikeResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<AdLikeResponse>(items, totalCount);
+
         return responses;
     }
 

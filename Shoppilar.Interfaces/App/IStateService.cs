@@ -14,9 +14,8 @@ public interface IStateService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<StateResponse>> GetPagedAsync(
+    Task<PaginatedResponse<StateResponse>> GetPagedProjectionAsync(
         Expression<Func<State, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

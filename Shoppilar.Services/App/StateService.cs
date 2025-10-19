@@ -27,19 +27,22 @@ public class StateService(IRepo<State> repository) : IStateService
         return responses;
     }
 
-    public async Task<PaginatedResponse<StateResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<StateResponse>> GetPagedProjectionAsync(
         Expression<Func<State, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<StateResponse>(
-            items.Select(u => new StateResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: StateResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<StateResponse>(items, totalCount);
+
         return responses;
     }
 }

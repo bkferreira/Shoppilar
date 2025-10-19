@@ -29,19 +29,22 @@ public class FavoriteService(IRepo<Favorite> repository) : IFavoriteService
         return responses;
     }
 
-    public async Task<PaginatedResponse<FavoriteResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<FavoriteResponse>> GetPagedProjectionAsync(
         Expression<Func<Favorite, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<FavoriteResponse>(
-            items.Select(u => new FavoriteResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: FavoriteResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<FavoriteResponse>(items, totalCount);
+
         return responses;
     }
 

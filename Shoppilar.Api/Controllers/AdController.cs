@@ -9,20 +9,13 @@ namespace Shoppilar.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AdController(IAdService adService) : ControllerBase
+    public class AdController(IAdService service) : ControllerBase
     {
-        [HttpGet("teste")]
-        public IActionResult Teste()
-        {
-            var claims = HttpContext.User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-            return Ok(claims);
-        }
-
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<BaseResponse<AdResponse?>>> GetById(Guid id, string? includeProperties,
             CancellationToken cancellationToken)
         {
-            var ad = await adService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+            var ad = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
             if (ad == null) return NotFound(new BaseResponse<AdResponse?>(false, Messages.NotFound));
 
             return Ok(new BaseResponse<AdResponse?>(true, Messages.Found, ad));
@@ -34,7 +27,7 @@ namespace Shoppilar.Api.Controllers
         {
             var predicate = request.Expression.DeserializeLambdaExpression<Ad>();
             var includes = request.IncludeProperties;
-            var result = await adService.GetAllAsync(predicate, includes, cancellationToken);
+            var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
             if (!result.Any())
                 return NotFound(new BaseResponse<List<AdResponse>>(false, Messages.NoneFound));
@@ -43,34 +36,13 @@ namespace Shoppilar.Api.Controllers
         }
 
         [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<AdResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<Ad>();
-            var includes = request.IncludeProperties;
-            var result = await adService.GetPagedAsync(
-                predicate,
-                includes,
-                request.Page,
-                request.PageSize,
-                cancellationToken
-            );
-
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<AdResponse>>(false, Messages.NoneFound));
-
-            return Ok(new BaseResponse<PaginatedResponse<AdResponse>>(true, Messages.Found, result));
-        }
-
-        [HttpPost("projection")]
         public async Task<ActionResult<BaseResponse<PaginatedResponse<AdResponse>>>> GetPagedProjection(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression?.DeserializeLambdaExpression<Ad>();
 
-            var result = await adService.GetPagedProjectionAsync(
+            var result = await service.GetPagedProjectionAsync(
                 predicate,
                 page: request.Page,
                 pageSize: request.PageSize,
@@ -87,7 +59,7 @@ namespace Shoppilar.Api.Controllers
         public async Task<ActionResult<BaseResponse<AdResponse?>>> Insert([FromBody] AdInput input,
             CancellationToken cancellationToken)
         {
-            var result = await adService.InsertAsync(input, cancellationToken);
+            var result = await service.InsertAsync(input, cancellationToken);
             if (!result.Success)
                 return BadRequest(new BaseResponse<AdResponse?>(false, Messages.OperationFailed));
 
@@ -101,7 +73,7 @@ namespace Shoppilar.Api.Controllers
             if (id != input.Id)
                 return BadRequest(new BaseResponse<AdResponse?>(false, Messages.OperationFailed));
 
-            var result = await adService.UpdateAsync(input, cancellationToken);
+            var result = await service.UpdateAsync(input, cancellationToken);
             if (!result.Success)
                 return NotFound(new BaseResponse<AdResponse?>(false, result.Message ?? Messages.NotFound));
 
@@ -111,7 +83,7 @@ namespace Shoppilar.Api.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
         {
-            var success = await adService.DeleteAsync(new AdInput { Id = id }, cancellationToken);
+            var success = await service.DeleteAsync(new AdInput { Id = id }, cancellationToken);
             if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NotFound));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
@@ -121,7 +93,7 @@ namespace Shoppilar.Api.Controllers
         public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<AdInput> inputs,
             CancellationToken cancellationToken)
         {
-            var success = await adService.DeleteAsync(inputs, cancellationToken);
+            var success = await service.DeleteAsync(inputs, cancellationToken);
             if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NoneFound));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
@@ -133,7 +105,7 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression.DeserializeLambdaExpression<Ad>();
-            var total = await adService.CountAsync(predicate, cancellationToken);
+            var total = await service.CountAsync(predicate, cancellationToken);
 
             return Ok(new BaseResponse<int>(true, Messages.Created, total));
         }

@@ -29,19 +29,22 @@ public class EventService(IRepo<Event> repository) : IEventService
         return responses;
     }
 
-    public async Task<PaginatedResponse<EventResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<EventResponse>> GetPagedProjectionAsync(
         Expression<Func<Event, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<EventResponse>(
-            items.Select(u => new EventResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: EventResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<EventResponse>(items, totalCount);
+
         return responses;
     }
 

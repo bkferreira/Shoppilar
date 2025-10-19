@@ -9,13 +9,13 @@ namespace Shoppilar.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class StateController(IStateService stateService) : ControllerBase
+    public class StateController(IStateService service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<BaseResponse<StateResponse?>>> GetById(Guid id, string? includeProperties,
             CancellationToken cancellationToken)
         {
-            var state = await stateService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+            var state = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
             if (state == null) return NotFound(new BaseResponse<StateResponse?>(false, Messages.NotFound));
 
             return Ok(new BaseResponse<StateResponse?>(true, Messages.Found, state));
@@ -27,7 +27,7 @@ namespace Shoppilar.Api.Controllers
         {
             var predicate = request.Expression.DeserializeLambdaExpression<State>();
             var includes = request.IncludeProperties;
-            var result = await stateService.GetAllAsync(predicate, includes, cancellationToken);
+            var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
             if (!result.Any())
                 return NotFound(new BaseResponse<List<StateResponse>>(false, Messages.NoneFound));
@@ -36,18 +36,17 @@ namespace Shoppilar.Api.Controllers
         }
 
         [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<StateResponse>>>> GetPaged(
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<StateResponse>>>> GetPagedProjection(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
-            var predicate = request.Expression.DeserializeLambdaExpression<State>();
-            var includes = request.IncludeProperties;
-            var result = await stateService.GetPagedAsync(
+            var predicate = request.Expression?.DeserializeLambdaExpression<State>();
+
+            var result = await service.GetPagedProjectionAsync(
                 predicate,
-                includes,
-                request.Page,
-                request.PageSize,
-                cancellationToken
+                page: request.Page,
+                pageSize: request.PageSize,
+                cancellationToken: cancellationToken
             );
 
             if (!result.Items.Any())

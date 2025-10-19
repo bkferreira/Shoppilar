@@ -27,21 +27,6 @@ public class TypeService<T>(IRepo<T> repository) : ITypeService<T> where T : Bas
         return entities.Select(x => new TypeResponse(x)).ToList();
     }
 
-    public async Task<PaginatedResponse<TypeResponse>> GetPagedAsync(
-        Expression<Func<T, bool>>? predicate = null,
-        string? includeProperties = null,
-        int page = 1,
-        int pageSize = 10,
-        CancellationToken cancellationToken = default)
-    {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        return new PaginatedResponse<TypeResponse>(
-            items.Select(u => new TypeResponse(u)).ToList(),
-            totalCount
-        );
-    }
-
     public async Task<BaseResponse<TypeResponse?>> InsertAsync(TypeInput input,
         CancellationToken cancellationToken = default)
     {

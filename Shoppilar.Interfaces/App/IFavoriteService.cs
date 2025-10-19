@@ -15,9 +15,8 @@ public interface IFavoriteService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<FavoriteResponse>> GetPagedAsync(
+    Task<PaginatedResponse<FavoriteResponse>> GetPagedProjectionAsync(
         Expression<Func<Favorite, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

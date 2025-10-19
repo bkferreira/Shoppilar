@@ -9,13 +9,13 @@ namespace Shoppilar.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EventController(IEventService eventService) : ControllerBase
+    public class EventController(IEventService service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<BaseResponse<EventResponse?>>> GetById(Guid id, string? includeProperties,
             CancellationToken cancellationToken)
         {
-            var ev = await eventService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+            var ev = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
             if (ev == null) return NotFound(new BaseResponse<EventResponse?>(false, Messages.NotFound));
 
             return Ok(new BaseResponse<EventResponse?>(true, Messages.Found, ev));
@@ -27,7 +27,7 @@ namespace Shoppilar.Api.Controllers
         {
             var predicate = request.Expression.DeserializeLambdaExpression<Event>();
             var includes = request.IncludeProperties;
-            var result = await eventService.GetAllAsync(predicate, includes, cancellationToken);
+            var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
             if (!result.Any())
                 return NotFound(new BaseResponse<List<EventResponse>>(false, Messages.NoneFound));
@@ -36,18 +36,17 @@ namespace Shoppilar.Api.Controllers
         }
 
         [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<EventResponse>>>> GetPaged(
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<EventResponse>>>> GetPagedProjection(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
-            var predicate = request.Expression.DeserializeLambdaExpression<Event>();
-            var includes = request.IncludeProperties;
-            var result = await eventService.GetPagedAsync(
+            var predicate = request.Expression?.DeserializeLambdaExpression<Event>();
+
+            var result = await service.GetPagedProjectionAsync(
                 predicate,
-                includes,
-                request.Page,
-                request.PageSize,
-                cancellationToken
+                page: request.Page,
+                pageSize: request.PageSize,
+                cancellationToken: cancellationToken
             );
 
             if (!result.Items.Any())
@@ -60,7 +59,7 @@ namespace Shoppilar.Api.Controllers
         public async Task<ActionResult<BaseResponse<EventResponse?>>> Insert([FromBody] EventInput input,
             CancellationToken cancellationToken)
         {
-            var result = await eventService.InsertAsync(input, cancellationToken);
+            var result = await service.InsertAsync(input, cancellationToken);
             if (!result.Success)
                 return BadRequest(new BaseResponse<EventResponse?>(false, Messages.OperationFailed));
 
@@ -74,7 +73,7 @@ namespace Shoppilar.Api.Controllers
             if (id != input.Id)
                 return BadRequest(new BaseResponse<EventResponse?>(false, Messages.OperationFailed));
 
-            var result = await eventService.UpdateAsync(input, cancellationToken);
+            var result = await service.UpdateAsync(input, cancellationToken);
             if (!result.Success)
                 return NotFound(new BaseResponse<EventResponse?>(false, result.Message ?? Messages.NotFound));
 
@@ -84,7 +83,7 @@ namespace Shoppilar.Api.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
         {
-            var success = await eventService.HardDeleteAsync(new EventInput { Id = id }, cancellationToken);
+            var success = await service.HardDeleteAsync(new EventInput { Id = id }, cancellationToken);
             if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NotFound));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
@@ -94,7 +93,7 @@ namespace Shoppilar.Api.Controllers
         public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<EventInput> inputs,
             CancellationToken cancellationToken)
         {
-            var success = await eventService.HardDeleteAsync(inputs, cancellationToken);
+            var success = await service.HardDeleteAsync(inputs, cancellationToken);
             if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NoneFound));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
@@ -106,7 +105,7 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression.DeserializeLambdaExpression<Event>();
-            var total = await eventService.CountAsync(predicate, cancellationToken);
+            var total = await service.CountAsync(predicate, cancellationToken);
 
             return Ok(new BaseResponse<int>(true, Messages.Created, total));
         }
