@@ -1,0 +1,63 @@
+# ====================
+# General
+# ====================
+.DS_Store
+Thumbs.db
+*.log
+*.user
+*.suo
+*.tmp
+*.bak
+*.swp
+
+# ====================
+# Build Folders
+# ====================
+bin/
+obj/
+out/
+
+# ====================
+# Visual Studio
+# ====================
+.vs/
+*.vcxproj.user
+*.sln.DotSettings.user
+*.dbmdl
+
+# ====================
+# Rider
+# ====================
+.idea/
+*.sln.iml
+*.idea.*
+
+# ====================
+# NuGet
+# ====================
+*.nupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ====================
+# .NET MAUI / Xamarin
+# ====================
+*.apk
+*.ap_
+*.aab
+*.xib
+*.plist
+*.app
+*.appx
+*.ipa
+*.xcuserstate
+*.dotnet/
+.maui/
+
+# ====================
+# Others
+# ====================
+.vscode/
+*.DS_Store
