@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Shoppilar.Mobile.Shells.Auth.Views.LoginView"
+             xmlns:utils="clr-namespace:Shoppilar.Mobile.Utils"
+             xmlns:vm="clr-namespace:Shoppilar.Mobile.Shells.Auth.ViewModels"
+             x:DataType="vm:LoginViewModel"
+             Shell.NavBarIsVisible="False">
+    
+    
+</ContentPage>
