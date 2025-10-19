@@ -29,19 +29,22 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
         return responses;
     }
 
-    public async Task<PaginatedResponse<PersonAddressResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<PersonAddressResponse>> GetPagedProjectionAsync(
         Expression<Func<PersonAddress, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<PersonAddressResponse>(
-            items.Select(u => new PersonAddressResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: PersonAddressResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<PersonAddressResponse>(items, totalCount);
+
         return responses;
     }
 
@@ -62,7 +65,8 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<PersonAddressResponse?>(true, Messages.Created, new PersonAddressResponse(entity));
+        var response =
+            new BaseResponse<PersonAddressResponse?>(true, Messages.Created, new PersonAddressResponse(entity));
 
         return response;
     }
@@ -112,7 +116,8 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<PersonAddressResponse?>(true, Messages.Updated, new PersonAddressResponse(entity));
+        var response =
+            new BaseResponse<PersonAddressResponse?>(true, Messages.Updated, new PersonAddressResponse(entity));
 
         return response;
     }

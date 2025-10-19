@@ -8,13 +8,13 @@ namespace Shoppilar.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class CityController(ICityService cityService) : ControllerBase
+    public class CityController(ICityService service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<BaseResponse<CityResponse?>>> GetById(Guid id, string? includeProperties,
             CancellationToken cancellationToken)
         {
-            var city = await cityService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+            var city = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
             if (city == null)
                 return NotFound(new BaseResponse<CityResponse?>(false, Messages.NotFound));
 
@@ -22,14 +22,18 @@ namespace Shoppilar.Api.Controllers
         }
 
         [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<CityResponse>>>> GetPaged(
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<CityResponse>>>> GetPagedProjection(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
-            var predicate = request.Expression.DeserializeLambdaExpression<City>();
-            var includes = request.IncludeProperties;
-            var result = await cityService.GetPagedAsync(predicate, includes, request.Page, request.PageSize,
-                cancellationToken);
+            var predicate = request.Expression?.DeserializeLambdaExpression<City>();
+
+            var result = await service.GetPagedProjectionAsync(
+                predicate,
+                page: request.Page,
+                pageSize: request.PageSize,
+                cancellationToken: cancellationToken
+            );
 
             if (!result.Items.Any())
                 return NotFound(new BaseResponse<PaginatedResponse<CityResponse>>(false, Messages.NoneFound));
@@ -43,7 +47,7 @@ namespace Shoppilar.Api.Controllers
         {
             var predicate = request.Expression.DeserializeLambdaExpression<City>();
             var includes = request.IncludeProperties;
-            var result = await cityService.GetAllAsync(predicate, includes, cancellationToken);
+            var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
             if (!result.Any())
                 return NotFound(new BaseResponse<List<CityResponse>>(false, Messages.NoneFound));

@@ -10,13 +10,13 @@ namespace Shoppilar.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PersonController(IPersonService PersonService) : ControllerBase
+public class PersonController(IPersonService service) : ControllerBase
 {
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<PersonResponse?>> GetAsync(Guid id, string? includeProperties,
         CancellationToken cancellationToken)
     {
-        var result = await PersonService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+        var result = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
         if (result == null) return NotFound("Usuário não encontrado");
         return Ok(result);
     }
@@ -27,19 +27,28 @@ public class PersonController(IPersonService PersonService) : ControllerBase
     {
         var predicate = request.Expression.DeserializeLambdaExpression<Person>();
         var includes = request.IncludeProperties;
-        var result = await PersonService.GetAllAsync(predicate, includes, cancellationToken);
+        var result = await service.GetAllAsync(predicate, includes, cancellationToken);
         return Ok(result);
     }
 
-    [HttpPost("GetPaged")]
-    public async Task<ActionResult<PaginatedResponse<PersonResponse>>> GetPaged([FromBody] GetPagedRequest request,
+    [HttpPost("paged")]
+    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonResponse>>>> GetPagedProjection(
+        [FromBody] GetPagedRequest request,
         CancellationToken cancellationToken)
     {
-        var predicate = request.Expression.DeserializeLambdaExpression<Person>();
-        var includes = request.IncludeProperties;
-        var result =
-            await PersonService.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-        return Ok(result);
+        var predicate = request.Expression?.DeserializeLambdaExpression<Person>();
+
+        var result = await service.GetPagedProjectionAsync(
+            predicate,
+            page: request.Page,
+            pageSize: request.PageSize,
+            cancellationToken: cancellationToken
+        );
+
+        if (!result.Items.Any())
+            return NotFound(new BaseResponse<PaginatedResponse<PersonResponse>>(false, Messages.NoneFound));
+
+        return Ok(new BaseResponse<PaginatedResponse<PersonResponse>>(true, Messages.Found, result));
     }
 
     // [HttpPost]
@@ -54,14 +63,14 @@ public class PersonController(IPersonService PersonService) : ControllerBase
     public async Task<ActionResult<PersonResponse?>> Update([FromBody] PersonInput input,
         CancellationToken cancellationToken)
     {
-        var result = await PersonService.UpdateAsync(input, cancellationToken);
+        var result = await service.UpdateAsync(input, cancellationToken);
         return Ok(result);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult<bool>> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var result = await PersonService.DeleteAsync(new PersonInput { Id = id }, cancellationToken);
+        var result = await service.DeleteAsync(new PersonInput { Id = id }, cancellationToken);
         return Ok(result);
     }
 
@@ -70,7 +79,7 @@ public class PersonController(IPersonService PersonService) : ControllerBase
         CancellationToken cancellationToken)
     {
         var predicate = request.Expression.DeserializeLambdaExpression<Person>();
-        var result = await PersonService.CountAsync(predicate, cancellationToken);
+        var result = await service.CountAsync(predicate, cancellationToken);
         return Ok(result);
     }
 }

@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 
 namespace Shoppilar.DTOs.App.Response;
@@ -22,5 +23,20 @@ public class PersonResponse
         Birth = entity.Birth.ToString("dd/MM/yyyy");
         PersonTypeDesc = entity.PersonType?.Description;
         Image = entity.Image?.Url;
+    }
+
+    public static Expression<Func<Person, PersonResponse>> Projection
+    {
+        get
+        {
+            return entity => new PersonResponse
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                Birth = entity.Birth.ToString("dd/MM/yyyy"),
+                PersonTypeDesc = entity.PersonType!.Description,
+                Image = entity.Image!.Url
+            };
+        }
     }
 }

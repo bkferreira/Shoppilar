@@ -30,19 +30,22 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
         return responses;
     }
 
-    public async Task<PaginatedResponse<PersonSocialMediaResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<PersonSocialMediaResponse>> GetPagedProjectionAsync(
         Expression<Func<PersonSocialMedia, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<PersonSocialMediaResponse>(
-            items.Select(u => new PersonSocialMediaResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: PersonSocialMediaResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<PersonSocialMediaResponse>(items, totalCount);
+
         return responses;
     }
 
@@ -58,7 +61,8 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<PersonSocialMediaResponse?>(true, Messages.Created, new PersonSocialMediaResponse(entity));
+        var response =
+            new BaseResponse<PersonSocialMediaResponse?>(true, Messages.Created, new PersonSocialMediaResponse(entity));
 
         return response;
     }
@@ -93,7 +97,8 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<PersonSocialMediaResponse?>(true, Messages.Updated, new PersonSocialMediaResponse(entity));
+        var response =
+            new BaseResponse<PersonSocialMediaResponse?>(true, Messages.Updated, new PersonSocialMediaResponse(entity));
 
         return response;
     }

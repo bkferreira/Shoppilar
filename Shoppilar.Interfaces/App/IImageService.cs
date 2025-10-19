@@ -15,9 +15,8 @@ public interface IImageService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<ImageResponse>> GetPagedAsync(
+    Task<PaginatedResponse<ImageResponse>> GetPagedProjectionAsync(
         Expression<Func<Image, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

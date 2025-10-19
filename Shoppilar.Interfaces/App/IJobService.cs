@@ -3,7 +3,7 @@ using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
 
-namespace Shoppilar.Interfaces.App.Service;
+namespace Shoppilar.Interfaces.App;
 
 public interface IJobService
 {
@@ -15,9 +15,8 @@ public interface IJobService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<JobResponse>> GetPagedAsync(
+    Task<PaginatedResponse<JobResponse>> GetPagedProjectionAsync(
         Expression<Func<Job, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

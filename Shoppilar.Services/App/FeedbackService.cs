@@ -29,19 +29,22 @@ public class FeedbackService(IRepo<Feedback> repository) : IFeedbackService
         return responses;
     }
 
-    public async Task<PaginatedResponse<FeedbackResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<FeedbackResponse>> GetPagedProjectionAsync(
         Expression<Func<Feedback, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<FeedbackResponse>(
-            items.Select(u => new FeedbackResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: FeedbackResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<FeedbackResponse>(items, totalCount);
+
         return responses;
     }
 

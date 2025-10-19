@@ -10,13 +10,13 @@ namespace Shoppilar.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class FeedbackController(IFeedbackService feedbackService) : ControllerBase
+    public class FeedbackController(IFeedbackService service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<BaseResponse<FeedbackResponse?>>> GetById(Guid id, string? includeProperties,
             CancellationToken cancellationToken)
         {
-            var feedback = await feedbackService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+            var feedback = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
             if (feedback == null) return NotFound(new BaseResponse<FeedbackResponse?>(false, Messages.NotFound));
 
             return Ok(new BaseResponse<FeedbackResponse?>(true, Messages.Found, feedback));
@@ -28,7 +28,7 @@ namespace Shoppilar.Api.Controllers
         {
             var predicate = request.Expression.DeserializeLambdaExpression<Feedback>();
             var includes = request.IncludeProperties;
-            var result = await feedbackService.GetAllAsync(predicate, includes, cancellationToken);
+            var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
             if (!result.Any())
                 return NotFound(new BaseResponse<List<FeedbackResponse>>(false, Messages.NoneFound));
@@ -37,18 +37,17 @@ namespace Shoppilar.Api.Controllers
         }
 
         [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<FeedbackResponse>>>> GetPaged(
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<FeedbackResponse>>>> GetPagedProjection(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
-            var predicate = request.Expression.DeserializeLambdaExpression<Feedback>();
-            var includes = request.IncludeProperties;
-            var result = await feedbackService.GetPagedAsync(
+            var predicate = request.Expression?.DeserializeLambdaExpression<Feedback>();
+
+            var result = await service.GetPagedProjectionAsync(
                 predicate,
-                includes,
-                request.Page,
-                request.PageSize,
-                cancellationToken
+                page: request.Page,
+                pageSize: request.PageSize,
+                cancellationToken: cancellationToken
             );
 
             if (!result.Items.Any())
@@ -61,7 +60,7 @@ namespace Shoppilar.Api.Controllers
         public async Task<ActionResult<BaseResponse<FeedbackResponse?>>> Insert([FromBody] FeedbackInput input,
             CancellationToken cancellationToken)
         {
-            var result = await feedbackService.InsertAsync(input, cancellationToken);
+            var result = await service.InsertAsync(input, cancellationToken);
             if (!result.Success)
                 return BadRequest(new BaseResponse<FeedbackResponse?>(false, Messages.OperationFailed));
 
@@ -75,7 +74,7 @@ namespace Shoppilar.Api.Controllers
             if (id != input.Id)
                 return BadRequest(new BaseResponse<FeedbackResponse?>(false, Messages.OperationFailed));
 
-            var result = await feedbackService.UpdateAsync(input, cancellationToken);
+            var result = await service.UpdateAsync(input, cancellationToken);
             if (!result.Success)
                 return NotFound(new BaseResponse<FeedbackResponse?>(false, result.Message ?? Messages.NotFound));
 
@@ -85,7 +84,7 @@ namespace Shoppilar.Api.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
         {
-            var success = await feedbackService.HardDeleteAsync(new FeedbackInput { Id = id }, cancellationToken);
+            var success = await service.HardDeleteAsync(new FeedbackInput { Id = id }, cancellationToken);
             if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NotFound));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
@@ -97,7 +96,7 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression.DeserializeLambdaExpression<Feedback>();
-            var total = await feedbackService.CountAsync(predicate, cancellationToken);
+            var total = await service.CountAsync(predicate, cancellationToken);
 
             return Ok(new BaseResponse<int>(true, Messages.Created, total));
         }

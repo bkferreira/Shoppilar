@@ -4,7 +4,7 @@ using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
 using Shoppilar.DTOs.App.Util;
 using Shoppilar.Interfaces;
-using Shoppilar.Interfaces.App.Service;
+using Shoppilar.Interfaces.App;
 
 namespace Shoppilar.Services.App;
 
@@ -29,19 +29,22 @@ public class JobService(IRepo<Job> repository) : IJobService
         return responses;
     }
 
-    public async Task<PaginatedResponse<JobResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<JobResponse>> GetPagedProjectionAsync(
         Expression<Func<Job, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<JobResponse>(
-            items.Select(u => new JobResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: JobResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<JobResponse>(items, totalCount);
+
         return responses;
     }
 

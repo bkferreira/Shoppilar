@@ -15,9 +15,8 @@ public interface IPersonSearchHistoryService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<PersonSearchHistoryResponse>> GetPagedAsync(
+    Task<PaginatedResponse<PersonSearchHistoryResponse>> GetPagedProjectionAsync(
         Expression<Func<PersonSearchHistory, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

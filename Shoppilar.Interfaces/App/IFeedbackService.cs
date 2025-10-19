@@ -15,9 +15,8 @@ public interface IFeedbackService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<FeedbackResponse>> GetPagedAsync(
+    Task<PaginatedResponse<FeedbackResponse>> GetPagedProjectionAsync(
         Expression<Func<Feedback, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

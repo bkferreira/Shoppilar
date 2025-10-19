@@ -5,7 +5,6 @@ using Shoppilar.DTOs.App.Response;
 using Shoppilar.DTOs.App.Util;
 using Shoppilar.Interfaces.App;
 
-
 namespace Shoppilar.Api.Controllers
 {
     #region DocumentTypeController
@@ -36,22 +35,6 @@ namespace Shoppilar.Api.Controllers
                 return NotFound(new BaseResponse<List<TypeResponse>>(false, Messages.NoneFound));
 
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
-        }
-
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<DocumentType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
         }
 
         [HttpPost]
@@ -115,20 +98,6 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<ContactType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
-        }
-
         [HttpPost]
         public async Task<ActionResult<BaseResponse<TypeResponse?>>> Insert([FromBody] TypeInput input,
             CancellationToken cancellationToken)
@@ -184,20 +153,6 @@ namespace Shoppilar.Api.Controllers
             var result = await service.GetAllAsync(predicate, includes, cancellationToken);
             if (!result.Any()) return NotFound(new BaseResponse<List<TypeResponse>>(false, Messages.NoneFound));
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
-        }
-
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<OccurrenceType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
         }
 
         [HttpPost]
@@ -257,20 +212,6 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<TargetType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
-        }
-
         [HttpPost]
         public async Task<ActionResult<BaseResponse<TypeResponse?>>> Insert([FromBody] TypeInput input,
             CancellationToken cancellationToken)
@@ -326,20 +267,6 @@ namespace Shoppilar.Api.Controllers
             var result = await service.GetAllAsync(predicate, includes, cancellationToken);
             if (!result.Any()) return NotFound(new BaseResponse<List<TypeResponse>>(false, Messages.NoneFound));
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
-        }
-
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<CategoryType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
         }
 
         [HttpPost]
@@ -399,20 +326,6 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<PersonType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
-        }
-
         [HttpPost]
         public async Task<ActionResult<BaseResponse<TypeResponse?>>> Insert([FromBody] TypeInput input,
             CancellationToken cancellationToken)
@@ -468,20 +381,6 @@ namespace Shoppilar.Api.Controllers
             var result = await service.GetAllAsync(predicate, includes, cancellationToken);
             if (!result.Any()) return NotFound(new BaseResponse<List<TypeResponse>>(false, Messages.NoneFound));
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
-        }
-
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<ImageType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
         }
 
         [HttpPost]
@@ -541,20 +440,6 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<JobType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
-        }
-
         [HttpPost]
         public async Task<ActionResult<BaseResponse<TypeResponse?>>> Insert([FromBody] TypeInput input,
             CancellationToken cancellationToken)
@@ -610,20 +495,6 @@ namespace Shoppilar.Api.Controllers
             var result = await service.GetAllAsync(predicate, includes, cancellationToken);
             if (!result.Any()) return NotFound(new BaseResponse<List<TypeResponse>>(false, Messages.NoneFound));
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
-        }
-
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<EventType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
         }
 
         [HttpPost]
@@ -683,20 +554,6 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<SocialMediaType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
-        }
-
         [HttpPost]
         public async Task<ActionResult<BaseResponse<TypeResponse?>>> Insert([FromBody] TypeInput input,
             CancellationToken cancellationToken)
@@ -754,20 +611,6 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<AdType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
-        }
-
         [HttpPost]
         public async Task<ActionResult<BaseResponse<TypeResponse?>>> Insert([FromBody] TypeInput input,
             CancellationToken cancellationToken)
@@ -823,20 +666,6 @@ namespace Shoppilar.Api.Controllers
             var result = await service.GetAllAsync(predicate, includes, cancellationToken);
             if (!result.Any()) return NotFound(new BaseResponse<List<TypeResponse>>(false, Messages.NoneFound));
             return Ok(new BaseResponse<List<TypeResponse>>(true, Messages.Found, result));
-        }
-
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<TypeResponse>>>> GetPaged(
-            [FromBody] GetPagedRequest request,
-            CancellationToken cancellationToken)
-        {
-            var predicate = request.Expression.DeserializeLambdaExpression<AdSubType>();
-            var includes = request.IncludeProperties;
-            var result =
-                await service.GetPagedAsync(predicate, includes, request.Page, request.PageSize, cancellationToken);
-            if (!result.Items.Any())
-                return NotFound(new BaseResponse<PaginatedResponse<TypeResponse>>(false, Messages.NoneFound));
-            return Ok(new BaseResponse<PaginatedResponse<TypeResponse>>(true, Messages.Found, result));
         }
 
         [HttpPost]

@@ -29,19 +29,22 @@ public class OccurrenceService(IRepo<Occurrence> repository) : IOccurrenceServic
         return responses;
     }
 
-    public async Task<PaginatedResponse<OccurrenceResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<OccurrenceResponse>> GetPagedProjectionAsync(
         Expression<Func<Occurrence, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<OccurrenceResponse>(
-            items.Select(u => new OccurrenceResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: OccurrenceResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<OccurrenceResponse>(items, totalCount);
+
         return responses;
     }
 

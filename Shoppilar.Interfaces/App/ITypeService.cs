@@ -15,11 +15,6 @@ public interface ITypeService<T> where T : BaseType
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<TypeResponse>> GetPagedAsync(Expression<Func<T, bool>>? predicate = null,
-        string? includeProperties = null,
-        int page = 1,
-        int pageSize = 10, CancellationToken cancellationToken = default);
-
     Task<BaseResponse<TypeResponse?>> InsertAsync(TypeInput input, CancellationToken cancellationToken = default);
 
     Task<BaseResponse<TypeResponse?>> UpdateAsync(TypeInput input, CancellationToken cancellationToken = default);

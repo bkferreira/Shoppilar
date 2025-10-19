@@ -29,19 +29,22 @@ public class AdFeaturedService(IRepo<AdFeatured> repository) : IAdFeaturedServic
         return responses;
     }
 
-    public async Task<PaginatedResponse<AdFeaturedResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<AdFeaturedResponse>> GetPagedProjectionAsync(
         Expression<Func<AdFeatured, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<AdFeaturedResponse>(
-            items.Select(u => new AdFeaturedResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: AdFeaturedResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<AdFeaturedResponse>(items, totalCount);
+
         return responses;
     }
 

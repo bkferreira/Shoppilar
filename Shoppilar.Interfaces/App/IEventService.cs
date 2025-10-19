@@ -15,9 +15,8 @@ public interface IEventService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<EventResponse>> GetPagedAsync(
+    Task<PaginatedResponse<EventResponse>> GetPagedProjectionAsync(
         Expression<Func<Event, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

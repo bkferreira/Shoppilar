@@ -29,19 +29,22 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
         return responses;
     }
 
-    public async Task<PaginatedResponse<PersonContactResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<PersonContactResponse>> GetPagedProjectionAsync(
         Expression<Func<PersonContact, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<PersonContactResponse>(
-            items.Select(u => new PersonContactResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: PersonContactResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<PersonContactResponse>(items, totalCount);
+
         return responses;
     }
 
@@ -58,7 +61,8 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<PersonContactResponse?>(true, Messages.Created, new PersonContactResponse(entity));
+        var response =
+            new BaseResponse<PersonContactResponse?>(true, Messages.Created, new PersonContactResponse(entity));
 
         return response;
     }
@@ -95,7 +99,8 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<PersonContactResponse?>(true, Messages.Updated, new PersonContactResponse(entity));
+        var response =
+            new BaseResponse<PersonContactResponse?>(true, Messages.Updated, new PersonContactResponse(entity));
 
         return response;
     }

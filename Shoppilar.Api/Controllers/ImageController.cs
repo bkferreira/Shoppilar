@@ -10,13 +10,13 @@ namespace Shoppilar.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ImageController(IImageService imageService) : ControllerBase
+    public class ImageController(IImageService service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<BaseResponse<ImageResponse?>>> GetById(Guid id, string? includeProperties,
             CancellationToken cancellationToken)
         {
-            var image = await imageService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+            var image = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
             if (image == null) return NotFound(new BaseResponse<ImageResponse?>(false, Messages.NotFound));
 
             return Ok(new BaseResponse<ImageResponse?>(true, Messages.Found, image));
@@ -28,7 +28,7 @@ namespace Shoppilar.Api.Controllers
         {
             var predicate = request.Expression.DeserializeLambdaExpression<Image>();
             var includes = request.IncludeProperties;
-            var result = await imageService.GetAllAsync(predicate, includes, cancellationToken);
+            var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
             if (!result.Any())
                 return NotFound(new BaseResponse<List<ImageResponse>>(false, Messages.NoneFound));
@@ -37,18 +37,17 @@ namespace Shoppilar.Api.Controllers
         }
 
         [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<ImageResponse>>>> GetPaged(
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<ImageResponse>>>> GetPagedProjection(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
-            var predicate = request.Expression.DeserializeLambdaExpression<Image>();
-            var includes = request.IncludeProperties;
-            var result = await imageService.GetPagedAsync(
+            var predicate = request.Expression?.DeserializeLambdaExpression<Image>();
+
+            var result = await service.GetPagedProjectionAsync(
                 predicate,
-                includes,
-                request.Page,
-                request.PageSize,
-                cancellationToken
+                page: request.Page,
+                pageSize: request.PageSize,
+                cancellationToken: cancellationToken
             );
 
             if (!result.Items.Any())
@@ -61,7 +60,7 @@ namespace Shoppilar.Api.Controllers
         public async Task<ActionResult<BaseResponse<ImageResponse?>>> Insert([FromBody] ImageInput input,
             CancellationToken cancellationToken)
         {
-            var result = await imageService.InsertAsync(input, cancellationToken);
+            var result = await service.InsertAsync(input, cancellationToken);
             if (!result.Success)
                 return BadRequest(new BaseResponse<ImageResponse?>(false, Messages.OperationFailed));
 
@@ -73,7 +72,7 @@ namespace Shoppilar.Api.Controllers
             [FromBody] List<ImageInput> inputs,
             CancellationToken cancellationToken)
         {
-            var result = await imageService.InsertAsync(inputs, cancellationToken);
+            var result = await service.InsertAsync(inputs, cancellationToken);
             if (!result.Success)
                 return BadRequest(new BaseResponse<List<ImageResponse>?>(false, Messages.OperationFailed));
 
@@ -84,7 +83,7 @@ namespace Shoppilar.Api.Controllers
         public async Task<ActionResult<BaseResponse<ImageResponse?>>> Update([FromBody] ImageInput input,
             CancellationToken cancellationToken)
         {
-            var result = await imageService.UpdateAsync(input, cancellationToken);
+            var result = await service.UpdateAsync(input, cancellationToken);
             if (!result.Success)
                 return NotFound(new BaseResponse<ImageResponse?>(false, result.Message ?? Messages.NotFound));
 
@@ -96,7 +95,7 @@ namespace Shoppilar.Api.Controllers
             [FromBody] List<ImageInput> inputs,
             CancellationToken cancellationToken)
         {
-            var result = await imageService.UpdateAsync(inputs, cancellationToken);
+            var result = await service.UpdateAsync(inputs, cancellationToken);
             if (!result.Success)
                 return NotFound(new BaseResponse<List<ImageResponse>>(false, result.Message ?? Messages.NotFound));
 
@@ -106,7 +105,7 @@ namespace Shoppilar.Api.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
         {
-            var success = await imageService.HardDeleteAsync(new ImageInput { Id = id }, cancellationToken);
+            var success = await service.HardDeleteAsync(new ImageInput { Id = id }, cancellationToken);
             if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NotFound));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
@@ -116,7 +115,7 @@ namespace Shoppilar.Api.Controllers
         public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<ImageInput> inputs,
             CancellationToken cancellationToken)
         {
-            var success = await imageService.HardDeleteAsync(inputs, cancellationToken);
+            var success = await service.HardDeleteAsync(inputs, cancellationToken);
             if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NoneFound));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
@@ -128,7 +127,7 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression.DeserializeLambdaExpression<Image>();
-            var total = await imageService.CountAsync(predicate, cancellationToken);
+            var total = await service.CountAsync(predicate, cancellationToken);
 
             return Ok(new BaseResponse<int>(true, Messages.Created, total));
         }

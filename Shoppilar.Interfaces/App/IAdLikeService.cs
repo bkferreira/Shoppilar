@@ -14,9 +14,8 @@ public interface IAdLikeService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<AdLikeResponse>> GetPagedAsync(
+    Task<PaginatedResponse<AdLikeResponse>> GetPagedProjectionAsync(
         Expression<Func<AdLike, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);

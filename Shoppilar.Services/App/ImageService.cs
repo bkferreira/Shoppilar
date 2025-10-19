@@ -29,19 +29,22 @@ public class ImageService(IRepo<Image> repository) : IImageService
         return responses;
     }
 
-    public async Task<PaginatedResponse<ImageResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<ImageResponse>> GetPagedProjectionAsync(
         Expression<Func<Image, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<ImageResponse>(
-            items.Select(u => new ImageResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: ImageResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<ImageResponse>(items, totalCount);
+
         return responses;
     }
 

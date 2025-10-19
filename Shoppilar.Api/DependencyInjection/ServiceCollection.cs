@@ -1,5 +1,4 @@
 using Shoppilar.Interfaces.App;
-using Shoppilar.Interfaces.App.Service;
 using Shoppilar.Services.App;
 
 namespace Shoppilar.Api.DependencyInjection;

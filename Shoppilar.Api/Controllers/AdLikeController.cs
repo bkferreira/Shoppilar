@@ -9,13 +9,13 @@ namespace Shoppilar.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AdLikeController(IAdLikeService adLikeService) : ControllerBase
+    public class AdLikeController(IAdLikeService service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<BaseResponse<AdLikeResponse?>>> GetById(Guid id, string? includeProperties,
             CancellationToken cancellationToken)
         {
-            var adLike = await adLikeService.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
+            var adLike = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
             if (adLike == null)
                 return NotFound(new BaseResponse<AdLikeResponse?>(false, Messages.NotFound));
 
@@ -28,7 +28,7 @@ namespace Shoppilar.Api.Controllers
         {
             var predicate = request.Expression.DeserializeLambdaExpression<AdLike>();
             var includes = request.IncludeProperties;
-            var result = await adLikeService.GetAllAsync(predicate, includes, cancellationToken);
+            var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
             if (!result.Any())
                 return NotFound(new BaseResponse<List<AdLikeResponse>>(false, Messages.NoneFound));
@@ -37,15 +37,18 @@ namespace Shoppilar.Api.Controllers
         }
 
         [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<AdLikeResponse>>>> GetPaged(
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<AdLikeResponse>>>> GetPagedProjection(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
-            var predicate = request.Expression.DeserializeLambdaExpression<AdLike>();
-            var includes = request.IncludeProperties;
-            var result =
-                await adLikeService.GetPagedAsync(predicate, includes, request.Page, request.PageSize,
-                    cancellationToken);
+            var predicate = request.Expression?.DeserializeLambdaExpression<AdLike>();
+
+            var result = await service.GetPagedProjectionAsync(
+                predicate,
+                page: request.Page,
+                pageSize: request.PageSize,
+                cancellationToken: cancellationToken
+            );
 
             if (!result.Items.Any())
                 return NotFound(new BaseResponse<PaginatedResponse<AdLikeResponse>>(false, Messages.NoneFound));
@@ -57,7 +60,7 @@ namespace Shoppilar.Api.Controllers
         public async Task<ActionResult<BaseResponse<AdLikeResponse?>>> Insert([FromBody] AdLikeInput input,
             CancellationToken cancellationToken)
         {
-            var result = await adLikeService.InsertAsync(input, cancellationToken);
+            var result = await service.InsertAsync(input, cancellationToken);
             if (!result.Success)
                 return BadRequest(new BaseResponse<AdLikeResponse?>(false, Messages.OperationFailed));
 
@@ -67,7 +70,7 @@ namespace Shoppilar.Api.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
         {
-            var success = await adLikeService.HardDeleteAsync(new AdLikeInput { Id = id }, cancellationToken);
+            var success = await service.HardDeleteAsync(new AdLikeInput { Id = id }, cancellationToken);
             if (!success)
                 return NotFound(new BaseResponse<bool>(false, Messages.NotFound));
 
@@ -79,7 +82,7 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression.DeserializeLambdaExpression<AdLike>();
-            var total = await adLikeService.CountAsync(predicate, cancellationToken);
+            var total = await service.CountAsync(predicate, cancellationToken);
 
             return Ok(new BaseResponse<int>(true, Messages.Found, total));
         }

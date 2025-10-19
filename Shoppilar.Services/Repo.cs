@@ -55,40 +55,6 @@ public sealed class Repo<T>(IDbContextFactory<AppDbContext> contextFactory) : IR
         return await query.AsNoTracking().ToListAsync(cancellationToken);
     }
 
-    public async Task<(List<T> Items, int TotalCount)> GetPagedAsync(
-        Expression<Func<T, bool>>? predicate = null,
-        string? includeProperties = null,
-        int page = 1,
-        int pageSize = 10,
-        CancellationToken cancellationToken = default)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-
-        var query = context.Set<T>().AsQueryable().AsNoTracking();
-
-        if (predicate != null)
-        {
-            query = query.Where(predicate);
-        }
-
-        if (!string.IsNullOrWhiteSpace(includeProperties))
-        {
-            foreach (var property in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(property.Trim());
-            }
-        }
-
-        var total = await query.CountAsync(cancellationToken);
-
-        var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return (items, total);
-    }
-    
     public async Task<(List<TModel> Items, int TotalCount)> GetPagedProjectionAsync<TModel>(
         Expression<Func<T, bool>>? predicate = null,
         Expression<Func<T, TModel>>? selector = null,

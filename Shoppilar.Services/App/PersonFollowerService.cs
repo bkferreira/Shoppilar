@@ -30,19 +30,22 @@ public class PersonFollowerService(IRepo<PersonFollower> repository) : IPersonFo
         return responses;
     }
 
-    public async Task<PaginatedResponse<PersonFollowerResponse>> GetPagedAsync(
+    public async Task<PaginatedResponse<PersonFollowerResponse>> GetPagedProjectionAsync(
         Expression<Func<PersonFollower, bool>>? predicate = null,
-        string? includeProperties = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) =
-            await repository.GetPagedAsync(predicate, includeProperties, page, pageSize, cancellationToken);
-        var responses = new PaginatedResponse<PersonFollowerResponse>(
-            items.Select(u => new PersonFollowerResponse(u)).ToList(),
-            totalCount
+        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+            predicate: predicate,
+            selector: PersonFollowerResponse.Projection,
+            page: page,
+            pageSize: pageSize,
+            cancellationToken: cancellationToken
         );
+
+        var responses = new PaginatedResponse<PersonFollowerResponse>(items, totalCount);
+
         return responses;
     }
 
@@ -57,7 +60,8 @@ public class PersonFollowerService(IRepo<PersonFollower> repository) : IPersonFo
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<PersonFollowerResponse?>(true, Messages.Created, new PersonFollowerResponse(entity));
+        var response =
+            new BaseResponse<PersonFollowerResponse?>(true, Messages.Created, new PersonFollowerResponse(entity));
 
         return response;
     }
