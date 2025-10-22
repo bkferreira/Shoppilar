@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using System.Text;
 
-namespace Shoppilar.DTOs.App.Util
+namespace Shoppilar.DTOs.Util
 {
     public static class IncludeHelper
     {
@@ -46,8 +46,7 @@ namespace Shoppilar.DTOs.App.Util
 
                 case MethodCallExpression { Method.Name: "Select" } methodCall:
                 {
-                    if (methodCall.Arguments.Count == 2 &&
-                        methodCall.Arguments[1] is LambdaExpression lambda)
+                    if (methodCall.Arguments is [_, LambdaExpression lambda])
                     {
                         var parent = GetPropertyPath(methodCall.Arguments[0]);
                         var child = GetPropertyPath(lambda.Body);

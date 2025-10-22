@@ -4,6 +4,6 @@ namespace Shoppilar.Data.Auth.Models;
 
 public class User : IdentityUser<Guid>
 {
-    public required string FullName { get; set; }
-    public ICollection<RefreshToken>? RefreshTokens { get; set; }
+    public required string Name { get; set; }
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }

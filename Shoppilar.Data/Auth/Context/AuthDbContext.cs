@@ -15,6 +15,13 @@ namespace Shoppilar.Data.Auth.Context
             builder.HasDefaultSchema("ident");
 
             base.OnModelCreating(builder);
+            
+            builder.Entity<User>(entity =>
+            {
+                entity.HasIndex(u => u.Email).IsUnique();
+                entity.HasIndex(u => u.UserName).IsUnique();
+                entity.HasIndex(u => u.PhoneNumber).IsUnique();
+            });
 
             builder.Entity<User>().ToTable("users");
             builder.Entity<IdentityRole<Guid>>().ToTable("roles");

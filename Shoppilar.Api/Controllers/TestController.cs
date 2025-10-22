@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Shoppilar.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class TestController : ControllerBase
 {
     [HttpGet("resultJwt")]

@@ -7,14 +7,6 @@ public static class ServiceCollection
 {
     public static void AddProjectServices(this IServiceCollection services)
     {
-        #region Authentication
-
-        // services.AddScoped<AuthenticationDelegatingHandler>();
-        // services.AddScoped<ApiAuthenticationStateProvider>();
-        // services.AddScoped<UserStateContainer>();
-
-        #endregion
-
         #region Services
 
         // services.AddScoped<IIndicadorService, ClientIndicadorService>();

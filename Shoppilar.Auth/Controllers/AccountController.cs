@@ -5,7 +5,7 @@ using Shoppilar.Interfaces.Auth;
 namespace Shoppilar.Auth.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class AuthController(IAuthService authService) : ControllerBase
     {
         [HttpPost("register")]
@@ -16,7 +16,7 @@ namespace Shoppilar.Auth.Controllers
             if (result == null)
                 return BadRequest("Não foi possível registrar o usuário.");
 
-            return Ok(result); // Retorna JWT + RefreshToken
+            return Ok(result);
         }
 
         [HttpPost("login")]
@@ -27,8 +27,27 @@ namespace Shoppilar.Auth.Controllers
             if (result == null)
                 return Unauthorized("Email ou senha inválidos.");
 
-            return Ok(result); // Retorna JWT + RefreshToken
+            return Ok(result);
         }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordInput input)
+        {
+            if (string.IsNullOrWhiteSpace(input.Login)
+                || string.IsNullOrWhiteSpace(input.CurrentPassword)
+                || string.IsNullOrWhiteSpace(input.NewPassword))
+            {
+                return BadRequest("Dados incompletos para alterar a senha.");
+            }
+
+            var success = await authService.ChangePasswordAsync(input);
+
+            if (!success)
+                return BadRequest("Falha ao alterar a senha. Usuário ou senha atual inválidos.");
+
+            return Ok("Senha alterada com sucesso.");
+        }
+
 
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshToken([FromBody] string token)
