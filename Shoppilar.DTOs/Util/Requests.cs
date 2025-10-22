@@ -1,4 +1,4 @@
-namespace Shoppilar.DTOs.App.Util;
+namespace Shoppilar.DTOs.Util;
 
 public class GetWithExpression
 {

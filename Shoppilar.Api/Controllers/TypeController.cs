@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.App.Util;
+using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces.App;
 
 namespace Shoppilar.Api.Controllers
@@ -10,7 +10,7 @@ namespace Shoppilar.Api.Controllers
     #region DocumentTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class DocumentTypeController(ITypeService<DocumentType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -75,7 +75,7 @@ namespace Shoppilar.Api.Controllers
     #region ContactTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class ContactTypeController(ITypeService<ContactType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -132,7 +132,7 @@ namespace Shoppilar.Api.Controllers
     #region OccurrenceTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class OccurrenceTypeController(ITypeService<OccurrenceType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -189,7 +189,7 @@ namespace Shoppilar.Api.Controllers
     #region TargetTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class TargetTypeController(ITypeService<TargetType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -246,7 +246,7 @@ namespace Shoppilar.Api.Controllers
     #region CategoryTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class CategoryTypeController(ITypeService<CategoryType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -303,7 +303,7 @@ namespace Shoppilar.Api.Controllers
     #region PersonTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class PersonTypeController(ITypeService<PersonType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -360,7 +360,7 @@ namespace Shoppilar.Api.Controllers
     #region ImageTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class ImageTypeController(ITypeService<ImageType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -417,7 +417,7 @@ namespace Shoppilar.Api.Controllers
     #region JobTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class JobTypeController(ITypeService<JobType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -474,7 +474,7 @@ namespace Shoppilar.Api.Controllers
     #region EventTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class EventTypeController(ITypeService<EventType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -531,7 +531,7 @@ namespace Shoppilar.Api.Controllers
     #region SocialMediaTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class SocialMediaTypeController(ITypeService<SocialMediaType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -588,7 +588,7 @@ namespace Shoppilar.Api.Controllers
     #region AdTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class AdTypeController(ITypeService<AdType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]
@@ -645,7 +645,7 @@ namespace Shoppilar.Api.Controllers
     #region AdSubTypeController
 
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class AdSubTypeController(ITypeService<AdSubType> service) : ControllerBase
     {
         [HttpGet("{id:guid}")]

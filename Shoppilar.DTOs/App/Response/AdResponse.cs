@@ -10,6 +10,7 @@ public class AdResponse
     public string? Description { get; set; }
     public string? Contact { get; set; }
     public int ViewsCount { get; set; }
+    public int Likes { get; set; }
     public decimal Price { get; set; }
     public DateTime? ExpirationDate { get; set; }
     public bool Promotion { get; set; }
@@ -38,6 +39,7 @@ public class AdResponse
         AdTypeDescription = entity.AdType?.Description;
         AdSubTypeDescription = entity.AdSubType?.Description;
         Images = entity.Images.Select(i => new ImageResponse(i)).ToList();
+        Likes = entity.Likes.Count;
     }
 
     public static Expression<Func<Ad, AdResponse>> Projection
@@ -58,7 +60,8 @@ public class AdResponse
                 CityName = entity.City!.Name,
                 AdTypeDescription = entity.AdType!.Description,
                 AdSubTypeDescription = entity.AdSubType!.Description,
-                Images = entity.Images.Select(i => new ImageResponse(i)).ToList()
+                Images = entity.Images.Select(i => new ImageResponse(i)).ToList(),
+                Likes = entity.Likes.Count
             };
         }
     }

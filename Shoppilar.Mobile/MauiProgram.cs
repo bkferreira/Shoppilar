@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui;
+using FFImageLoading.Maui;
 using Microsoft.Extensions.Logging;
 using Shoppilar.Mobile.DependencyInjection;
 using Shoppilar.Mobile.Handlers;
@@ -14,6 +15,7 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
+            .UseFFImageLoading()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -24,11 +26,13 @@ public static class MauiProgram
         CustomHandlers.Configure();
 
         builder.Services.AddProjectServices();
+        builder.Services.AddCacheServices();
 
-        builder.Services.AddHttpClient("OS.Api", client => { client.BaseAddress = new Uri(Constants.RouteApi); });
+        builder.Services.AddHttpClient("Shoppilar.Api",
+            client => { client.BaseAddress = new Uri(Constants.RouteApi); });
         // .AddHttpMessageHandler<AuthenticationDelegatingHandler>();
 
-        builder.Services.AddHttpClient("OS.Auth",
+        builder.Services.AddHttpClient("Shoppilar.Auth",
             options => { options.BaseAddress = new Uri(Constants.RouteAuth); });
 
 #if DEBUG

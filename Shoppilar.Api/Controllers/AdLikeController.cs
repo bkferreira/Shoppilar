@@ -2,13 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.App.Util;
+using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces.App;
 
 namespace Shoppilar.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class AdLikeController(IAdLikeService service) : ControllerBase
     {
         [HttpGet("{id:guid}")]

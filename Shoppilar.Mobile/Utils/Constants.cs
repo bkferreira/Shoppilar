@@ -12,8 +12,8 @@ namespace Shoppilar.Mobile.Utils
         public const string RouteApi = "http://192.168.199.171:5206";
         public const string RouteAuth = "http://192.168.199.171:5037";
 #else
-        public const string RouteApi = "https://app.ourosafra.com.br/v2/api/api";
-        public const string RouteAuth = "https://app.ourosafra.com.br/v2/auth/api";
+        public const string RouteApi = "";
+        public const string RouteAuth = "";
 #endif
 
         public static double DisplayWidth => GetDisplayWidth();

@@ -6,48 +6,54 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Shoppilar.Data.App.Models;
 using Shoppilar.Data.Auth.Context;
 using Shoppilar.Data.Auth.Models;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.App.Util;
 using Shoppilar.DTOs.Auth.Input;
 using Shoppilar.DTOs.Auth.Response;
 using Shoppilar.DTOs.Jwt;
+using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces.App;
 using Shoppilar.Interfaces.Auth;
 
 namespace Shoppilar.Services.Auth;
 
 public class AuthService(
-    UserManager<User> UserManager,
+    UserManager<User> userManager,
     SignInManager<User> signInManager,
     IConfiguration configuration,
     IPersonService personService,
-    AuthDbContext context)
-    : IAuthService
+    AuthDbContext context
+) : IAuthService
 {
     public async Task<AuthResponse?> RegisterAsync(RegisterInput input)
     {
-        if (string.IsNullOrWhiteSpace(input.Email))
+        if (string.IsNullOrWhiteSpace(input.PhoneNumber) || string.IsNullOrWhiteSpace(input.Password))
             return null;
 
         await using var transaction = await context.Database.BeginTransactionAsync();
+
         try
         {
             var user = new User
             {
-                UserName = input.Email,
+                UserName = input.UserName,
                 Email = input.Email,
-                FullName = input.FullName
+                PhoneNumber = input.PhoneNumber,
+                Name = input.PersonInput.Name
             };
 
-            var userResult = await UserManager.CreateAsync(user, input.Password);
+            if (await userManager.Users.AnyAsync(u =>
+                    (u.UserName != null && u.UserName == user.UserName) ||
+                    (u.Email != null && u.Email == user.Email) ||
+                    (u.PhoneNumber != null && u.PhoneNumber == user.PhoneNumber)))
+                return null;
+
+            var userResult = await userManager.CreateAsync(user, input.Password);
             if (!userResult.Succeeded)
                 return null;
 
             input.PersonInput.CreatedById = user.Id;
-
             var personResponse = await personService.InsertAsync(input.PersonInput);
             if (!personResponse.Success || personResponse.Item == null)
             {
@@ -68,18 +74,48 @@ public class AuthService(
 
     public async Task<AuthResponse?> LoginAsync(LoginInput input)
     {
-        var User = await UserManager.FindByEmailAsync(input.Email);
-        if (User == null) return null;
+        if (string.IsNullOrWhiteSpace(input.Login) || string.IsNullOrWhiteSpace(input.Password))
+            return null;
 
-        var result = await signInManager.CheckPasswordSignInAsync(User, input.Password, false);
-        if (!result.Succeeded) return null;
+        var normalizedLogin = input.Login.Trim().ToUpperInvariant();
 
-        var include = IncludeHelper.GetIncludePaths<Person>(p => p.PersonType!, p => p.Image!);
+        var user = await userManager.Users
+            .FirstOrDefaultAsync(u =>
+                (u.Email != null && u.Email.ToUpper() == normalizedLogin) ||
+                (u.UserName != null && u.UserName.ToUpper() == normalizedLogin) ||
+                (u.PhoneNumber != null && u.PhoneNumber == input.Login.Trim())
+            );
 
-        var person =
-            await personService.GetAllAsync(e => e.CreatedById == User.Id, include, CancellationToken.None);
+        if (user == null)
+            return null;
 
-        return await GenerateJwtTokenAsync(User, person.First());
+        var result = await signInManager.CheckPasswordSignInAsync(user, input.Password, false);
+        if (!result.Succeeded)
+            return null;
+
+        var person = await personService.GetAsync(
+            e => e.CreatedById == user.Id,
+            Includes.PersonIncludeAuth,
+            CancellationToken.None
+        );
+
+        return await GenerateJwtTokenAsync(user, person);
+    }
+
+    public async Task<bool> ChangePasswordAsync(ChangePasswordInput input)
+    {
+        var normalizedLogin = input.Login.Trim().ToUpperInvariant();
+        var user = await userManager.Users
+            .FirstOrDefaultAsync(u =>
+                (u.Email != null && u.Email.ToUpper() == normalizedLogin) ||
+                (u.UserName != null && u.UserName.ToUpper() == normalizedLogin) ||
+                (u.PhoneNumber != null && u.PhoneNumber == input.Login.Trim())
+            );
+
+        if (user == null) return false;
+
+        var result = await userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword);
+        return result.Succeeded;
     }
 
     public async Task<AuthResponse?> RefreshTokenAsync(string token)
@@ -87,24 +123,20 @@ public class AuthService(
         if (string.IsNullOrWhiteSpace(token)) return null;
 
         var refreshToken = await context.RefreshTokens
-            .AsNoTracking()
+            .Include(t => t.User)
             .FirstOrDefaultAsync(t => t.Token == token && !t.IsRevoked);
 
         if (refreshToken == null || refreshToken.ExpiryDate < DateTime.UtcNow)
             return null;
 
-        var User = await UserManager.FindByIdAsync(refreshToken.UserId.ToString());
-        if (User != null) return await GenerateJwtTokenAsync(User);
-        else return null;
-    }
 
-    public async Task<bool> ChangePasswordAsync(ChangePasswordInput input)
-    {
-        var User = await UserManager.FindByEmailAsync(input.Email);
-        if (User == null) return false;
+        var person = await personService.GetAsync(
+            e => e.CreatedById == refreshToken.User!.Id,
+            Includes.PersonIncludeAuth,
+            CancellationToken.None
+        );
 
-        var result = await UserManager.ChangePasswordAsync(User, input.CurrentPassword, input.NewPassword);
-        return result.Succeeded;
+        return await GenerateJwtTokenAsync(refreshToken.User!, person);
     }
 
     public async Task<bool> RevokeRefreshTokenAsync(string token)
@@ -124,24 +156,21 @@ public class AuthService(
         var jwtKey = configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key não configurado.");
         var jwtIssuer = configuration["Jwt:Issuer"];
         var jwtAudience = configuration["Jwt:Audience"];
-        var expiryMinutes = configuration.GetValue("Jwt:AccessTokenMinutes", 15);
+        var expiryMinutes = configuration.GetValue("Jwt:AccessTokenMinutes", 60);
 
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Email, user.Email ?? string.Empty),
-            new(JwtClaims.FullName, Clean(user.FullName)),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        if (person is not null)
+        if (person != null)
         {
             if (!string.IsNullOrEmpty(person.Name))
                 claims.Add(new Claim(JwtClaims.Name, Clean(person.Name)));
-
             if (!string.IsNullOrEmpty(person.PersonTypeDesc))
                 claims.Add(new Claim(JwtClaims.PersonType, Clean(person.PersonTypeDesc)));
-
             if (!string.IsNullOrEmpty(person.Birth))
                 claims.Add(new Claim(JwtClaims.Birth, Clean(person.Birth)));
 
@@ -161,7 +190,6 @@ public class AuthService(
 
         var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-        // Refresh token
         var refreshToken = new RefreshToken
         {
             Token = Guid.NewGuid().ToString(),
@@ -190,7 +218,7 @@ public class AuthService(
         foreach (var c in normalized)
         {
             var category = CharUnicodeInfo.GetUnicodeCategory(c);
-            if (category != UnicodeCategory.NonSpacingMark && c <= 127) // remove acentos e caracteres não ASCII
+            if (category != UnicodeCategory.NonSpacingMark && c <= 127)
                 sb.Append(c);
         }
 
