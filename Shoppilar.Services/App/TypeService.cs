@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,7 +15,8 @@ public class TypeService<T>(IRepo<T> repository) : ITypeService<T> where T : Bas
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        return new TypeResponse(entity);
+        var result = new TypeResponse(entity);
+        return result;
     }
 
     public async Task<List<TypeResponse>> GetAllAsync(Expression<Func<T, bool>>? predicate = null,
@@ -24,10 +24,11 @@ public class TypeService<T>(IRepo<T> repository) : ITypeService<T> where T : Bas
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        return entities.Select(x => new TypeResponse(x)).ToList();
+        var results = entities.Select(x => new TypeResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<BaseResponse<TypeResponse?>> InsertAsync(TypeInput input,
+    public async Task<TypeResponse?> InsertAsync(TypeInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new T
@@ -42,18 +43,19 @@ public class TypeService<T>(IRepo<T> repository) : ITypeService<T> where T : Bas
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        return new BaseResponse<TypeResponse?>(true, Messages.Created, new TypeResponse(entity));
+        var result = new TypeResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<TypeResponse?>> UpdateAsync(TypeInput input,
+    public async Task<TypeResponse?> UpdateAsync(TypeInput input,
         CancellationToken cancellationToken = default)
     {
         if (input.Id == null)
-            return new BaseResponse<TypeResponse?>(false, Messages.NotFound);
+            return null;
 
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
         if (entity == null)
-            return new BaseResponse<TypeResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.Description = input.Description ?? string.Empty;
         entity.Icon = input.Icon;
@@ -63,7 +65,8 @@ public class TypeService<T>(IRepo<T> repository) : ITypeService<T> where T : Bas
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        return new BaseResponse<TypeResponse?>(true, Messages.Updated, new TypeResponse(entity));
+        var result = new TypeResponse(entity);
+        return result;
     }
 
     public async Task<bool> HardDeleteAsync(TypeInput input,
@@ -74,7 +77,6 @@ public class TypeService<T>(IRepo<T> repository) : ITypeService<T> where T : Bas
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 

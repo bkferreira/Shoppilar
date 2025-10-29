@@ -28,11 +28,11 @@ public static class MauiProgram
         builder.Services.AddProjectServices();
         builder.Services.AddCacheServices();
 
-        builder.Services.AddHttpClient("Shoppilar.Api",
-            client => { client.BaseAddress = new Uri(Constants.RouteApi); });
-        // .AddHttpMessageHandler<AuthenticationDelegatingHandler>();
+        builder.Services.AddHttpClient(Constants.NameApi,
+                client => { client.BaseAddress = new Uri(Constants.RouteApi); })
+            .AddHttpMessageHandler<AuthHandler>();
 
-        builder.Services.AddHttpClient("Shoppilar.Auth",
+        builder.Services.AddHttpClient(Constants.NameAuth,
             options => { options.BaseAddress = new Uri(Constants.RouteAuth); });
 
 #if DEBUG

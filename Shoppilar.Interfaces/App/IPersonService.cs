@@ -15,16 +15,16 @@ public interface IPersonService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<PersonResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<PersonResponse>> GetPagedAsync(
         Expression<Func<Person, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<PersonResponse?>> InsertAsync(PersonInput input,
+    Task<PersonResponse?> InsertAsync(PersonInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<PersonResponse?>> UpdateAsync(PersonInput input,
+    Task<PersonResponse?> UpdateAsync(PersonInput input,
         CancellationToken cancellationToken = default);
 
     Task<bool> DeleteAsync(PersonInput input, CancellationToken cancellationToken = default);

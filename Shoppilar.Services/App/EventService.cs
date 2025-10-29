@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class EventService(IRepo<Event> repository) : IEventService
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new EventResponse(entity);
-        return response;
+        var result = new EventResponse(entity);
+        return result;
     }
 
     public async Task<List<EventResponse>> GetAllAsync(Expression<Func<Event, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class EventService(IRepo<Event> repository) : IEventService
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new EventResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new EventResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<EventResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<EventResponse>> GetPagedAsync(
         Expression<Func<Event, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: EventResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class EventService(IRepo<Event> repository) : IEventService
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<EventResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<EventResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<EventResponse?>> InsertAsync(EventInput input,
+    public async Task<EventResponse?> InsertAsync(EventInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new Event
@@ -83,18 +81,16 @@ public class EventService(IRepo<Event> repository) : IEventService
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<EventResponse?>(true, Messages.Created, new EventResponse(entity));
-
-        return response;
+        return new EventResponse(entity);
     }
 
-    public async Task<BaseResponse<EventResponse?>> UpdateAsync(EventInput input,
+    public async Task<EventResponse?> UpdateAsync(EventInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
 
         if (entity == null)
-            return new BaseResponse<EventResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.Title = input.Title;
         entity.Description = input.Description;
@@ -113,9 +109,8 @@ public class EventService(IRepo<Event> repository) : IEventService
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<EventResponse?>(true, Messages.Updated, new EventResponse(entity));
-
-        return response;
+        var result = new EventResponse(entity);
+        return result;
     }
 
     public async Task<bool> HardDeleteAsync(EventInput input,
@@ -126,7 +121,6 @@ public class EventService(IRepo<Event> repository) : IEventService
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
@@ -148,13 +142,13 @@ public class EventService(IRepo<Event> repository) : IEventService
             return false;
 
         var result = await repository.HardDeleteAsync(entities.ToList(), cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<Event, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

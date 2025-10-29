@@ -12,18 +12,19 @@ namespace Shoppilar.Api.Controllers
     [Route("[controller]")]
     public class PersonAddressController(IPersonAddressService service) : ControllerBase
     {
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<BaseResponse<PersonAddressResponse?>>> GetById(Guid id,
-            string? includeProperties,
-            CancellationToken cancellationToken)
+        [HttpPost("get")]
+        public async Task<ActionResult<BaseResponse<PersonAddressResponse?>>> GetAsync([FromBody] GetAllRequest request)
         {
-            var address = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-            if (address == null) return NotFound(new BaseResponse<PersonAddressResponse?>(false, Messages.NotFound));
+            var predicate = request.Expression.DeserializeLambdaExpression<PersonAddress>();
+            var includes = request.IncludeProperties;
 
-            return Ok(new BaseResponse<PersonAddressResponse?>(true, Messages.Found, address));
+            if (predicate == null) return NotFound(new BaseResponse<PersonAddressResponse>(false, Messages.NotFound));
+
+            var response = await service.GetAsync(predicate, includes);
+            return Ok(new BaseResponse<PersonAddressResponse>(true, Messages.Found, response));
         }
 
-        [HttpPost("all")]
+        [HttpPost("get-all")]
         public async Task<ActionResult<BaseResponse<List<PersonAddressResponse>>>> GetAll(
             [FromBody] GetAllRequest request,
             CancellationToken cancellationToken)
@@ -38,14 +39,14 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<PersonAddressResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonAddressResponse>>>> GetPagedProjection(
+        [HttpPost("get-paged")]
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonAddressResponse>>>> GetPaged(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression?.DeserializeLambdaExpression<PersonAddress>();
 
-            var result = await service.GetPagedProjectionAsync(
+            var result = await service.GetPagedAsync(
                 predicate,
                 page: request.Page,
                 pageSize: request.PageSize,
@@ -64,22 +65,22 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await service.InsertAsync(input, cancellationToken);
-            if (!result.Success)
+            if (result == null)
                 return BadRequest(new BaseResponse<PersonAddressResponse?>(false, Messages.OperationFailed));
 
-            return CreatedAtAction(nameof(GetById), new { id = result.Item?.Id }, result);
+            return Ok(new BaseResponse<PersonAddressResponse?>(true, Messages.Found, result));
         }
 
-        [HttpPost("batch")]
+        [HttpPost("insert-batch")]
         public async Task<ActionResult<BaseResponse<List<PersonAddressResponse>>>> InsertBatch(
             [FromBody] List<PersonAddressInput> inputs,
             CancellationToken cancellationToken)
         {
             var result = await service.InsertAsync(inputs, cancellationToken);
-            if (!result.Success)
+            if (!result.Any())
                 return BadRequest(new BaseResponse<List<PersonAddressResponse>>(false, Messages.OperationFailed));
 
-            return Ok(result);
+            return Ok(new BaseResponse<List<PersonAddressResponse?>>(true, Messages.Found, result!));
         }
 
         [HttpPut("{id:guid}")]
@@ -88,43 +89,43 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             if (id != input.Id)
-                return BadRequest(new BaseResponse<PersonAddressResponse?>(false, Messages.OperationFailed));
+                return NotFound(new BaseResponse<PersonAddressResponse?>(false, Messages.NotFound));
 
             var result = await service.UpdateAsync(input, cancellationToken);
-            if (!result.Success)
-                return NotFound(new BaseResponse<PersonAddressResponse?>(false, result.Message ?? Messages.NotFound));
+            if (result == null)
+                return BadRequest(new BaseResponse<PersonAddressResponse?>(false, Messages.OperationFailed));
 
-            return Ok(result);
+            return Ok(new BaseResponse<PersonAddressResponse?>(true, Messages.Found, result));
         }
 
-        [HttpPut("batch")]
+        [HttpPut("update-batch")]
         public async Task<ActionResult<BaseResponse<List<PersonAddressResponse>>>> UpdateBatch(
             [FromBody] List<PersonAddressInput> inputs,
             CancellationToken cancellationToken)
         {
             var result = await service.UpdateAsync(inputs, cancellationToken);
-            if (!result.Success)
+            if (!result.Any())
                 return NotFound(
-                    new BaseResponse<List<PersonAddressResponse>>(false, result.Message ?? Messages.NoneFound));
+                    new BaseResponse<List<PersonAddressResponse>>(false, Messages.NoneFound));
 
-            return Ok(result);
+            return Ok(new BaseResponse<List<PersonAddressResponse?>>(true, Messages.Found, result!));
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
         {
             var success = await service.HardDeleteAsync(new PersonAddressInput { Id = id }, cancellationToken);
-            if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NotFound));
+            if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
         }
 
-        [HttpDelete("batch")]
+        [HttpDelete("delete-batch")]
         public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<PersonAddressInput> inputs,
             CancellationToken cancellationToken)
         {
             var success = await service.HardDeleteAsync(inputs, cancellationToken);
-            if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NoneFound));
+            if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
         }
@@ -136,7 +137,7 @@ namespace Shoppilar.Api.Controllers
             var predicate = request.Expression.DeserializeLambdaExpression<PersonAddress>();
             var total = await service.CountAsync(predicate, cancellationToken);
 
-            return Ok(new BaseResponse<int>(true, Messages.Created, total));
+            return Ok(new BaseResponse<int>(true, Messages.Counted, total));
         }
     }
 }

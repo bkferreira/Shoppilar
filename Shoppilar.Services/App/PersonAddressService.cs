@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new PersonAddressResponse(entity);
-        return response;
+        var result = new PersonAddressResponse(entity);
+        return result;
     }
 
     public async Task<List<PersonAddressResponse>> GetAllAsync(Expression<Func<PersonAddress, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new PersonAddressResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new PersonAddressResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<PersonAddressResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<PersonAddressResponse>> GetPagedAsync(
         Expression<Func<PersonAddress, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: PersonAddressResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<PersonAddressResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<PersonAddressResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<PersonAddressResponse?>> InsertAsync(PersonAddressInput input,
+    public async Task<PersonAddressResponse?> InsertAsync(PersonAddressInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new PersonAddress
@@ -65,18 +63,16 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response =
-            new BaseResponse<PersonAddressResponse?>(true, Messages.Created, new PersonAddressResponse(entity));
-
-        return response;
+        var result = new PersonAddressResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<List<PersonAddressResponse>>> InsertAsync(
+    public async Task<List<PersonAddressResponse>> InsertAsync(
         List<PersonAddressInput>? inputs,
         CancellationToken cancellationToken = default)
     {
         if (inputs == null || !inputs.Any())
-            return new BaseResponse<List<PersonAddressResponse>>(false, Messages.NoneFound, []);
+            return [];
 
         var entities = inputs.Select(input => new PersonAddress
         {
@@ -92,18 +88,17 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
 
         await repository.InsertAsync(entities, cancellationToken);
 
-        var responses = entities.Select(e => new PersonAddressResponse(e)).ToList();
-
-        return new BaseResponse<List<PersonAddressResponse>>(true, Messages.Created, responses);
+        var results = entities.Select(e => new PersonAddressResponse(e)).ToList();
+        return results;
     }
 
-    public async Task<BaseResponse<PersonAddressResponse?>> UpdateAsync(PersonAddressInput input,
+    public async Task<PersonAddressResponse?> UpdateAsync(PersonAddressInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
 
         if (entity == null)
-            return new BaseResponse<PersonAddressResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.Neighborhood = input.Neighborhood;
         entity.Number = input.Number;
@@ -116,21 +111,19 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response =
-            new BaseResponse<PersonAddressResponse?>(true, Messages.Updated, new PersonAddressResponse(entity));
-
-        return response;
+        var result = new PersonAddressResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<List<PersonAddressResponse>>> UpdateAsync(
+    public async Task<List<PersonAddressResponse>> UpdateAsync(
         List<PersonAddressInput>? inputs,
         CancellationToken cancellationToken = default)
     {
         if (inputs == null || !inputs.Any())
-            return new BaseResponse<List<PersonAddressResponse>>(false, Messages.NoneFound, []);
+            return [];
 
         var updatedEntities = new List<PersonAddress>();
-        var responses = new List<PersonAddressResponse>();
+        var results = new List<PersonAddressResponse>();
 
         foreach (var input in inputs)
         {
@@ -148,16 +141,14 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
             entity.CityId = input.CityId;
 
             updatedEntities.Add(entity);
-            responses.Add(new PersonAddressResponse(entity));
+            results.Add(new PersonAddressResponse(entity));
         }
 
         if (!updatedEntities.Any())
-            return new BaseResponse<List<PersonAddressResponse>>(false, Messages.NoneFound,
-                responses);
+            return [];
 
         await repository.UpdateAsync(updatedEntities, cancellationToken);
-
-        return new BaseResponse<List<PersonAddressResponse>>(true, Messages.Updated, responses);
+        return results;
     }
 
     public async Task<bool> HardDeleteAsync(PersonAddressInput input,
@@ -168,7 +159,6 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
@@ -190,13 +180,13 @@ public class PersonAddressService(IRepo<PersonAddress> repository) : IPersonAddr
             return false;
 
         var result = await repository.HardDeleteAsync(entities.ToList(), cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<PersonAddress, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

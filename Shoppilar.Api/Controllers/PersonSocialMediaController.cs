@@ -5,40 +5,49 @@ using Shoppilar.DTOs.App.Response;
 using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces.App;
 
-
 namespace Shoppilar.Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
 public class PersonSocialMediaController(IPersonSocialMediaService service) : ControllerBase
 {
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<PersonSocialMediaResponse?>> GetAsync(Guid id, string? includeProperties,
-        CancellationToken cancellationToken)
+    [HttpPost("get")]
+    public async Task<ActionResult<BaseResponse<PersonSocialMediaResponse?>>> GetAsync(
+        [FromBody] GetAllRequest request)
     {
-        var result = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-        if (result == null) return NotFound("Rede social não encontrada");
-        return Ok(result);
+        var predicate = request.Expression.DeserializeLambdaExpression<PersonSocialMedia>();
+        var includes = request.IncludeProperties;
+
+        if (predicate == null)
+            return NotFound(new BaseResponse<PersonSocialMediaResponse>(false, Messages.NotFound));
+
+        var response = await service.GetAsync(predicate, includes);
+        return Ok(new BaseResponse<PersonSocialMediaResponse>(true, Messages.Found, response));
     }
 
-    [HttpPost("GetAll")]
-    public async Task<ActionResult<List<PersonSocialMediaResponse>>> GetAll([FromBody] GetAllRequest request,
+    [HttpPost("get-all")]
+    public async Task<ActionResult<BaseResponse<List<PersonSocialMediaResponse>>>> GetAll(
+        [FromBody] GetAllRequest request,
         CancellationToken cancellationToken)
     {
         var predicate = request.Expression.DeserializeLambdaExpression<PersonSocialMedia>();
         var includes = request.IncludeProperties;
         var result = await service.GetAllAsync(predicate, includes, cancellationToken);
-        return Ok(result);
+
+        if (!result.Any())
+            return NotFound(new BaseResponse<List<PersonSocialMediaResponse>>(false, Messages.NoneFound));
+
+        return Ok(new BaseResponse<List<PersonSocialMediaResponse>>(true, Messages.Found, result));
     }
 
-    [HttpPost("paged")]
-    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonSocialMediaResponse>>>> GetPagedProjection(
+    [HttpPost("get-paged")]
+    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonSocialMediaResponse>>>> GetPaged(
         [FromBody] GetPagedRequest request,
         CancellationToken cancellationToken)
     {
         var predicate = request.Expression?.DeserializeLambdaExpression<PersonSocialMedia>();
 
-        var result = await service.GetPagedProjectionAsync(
+        var result = await service.GetPagedAsync(
             predicate,
             page: request.Page,
             pageSize: request.PageSize,
@@ -52,56 +61,78 @@ public class PersonSocialMediaController(IPersonSocialMediaService service) : Co
     }
 
     [HttpPost]
-    public async Task<ActionResult<PersonSocialMediaResponse?>> Insert([FromBody] PersonSocialMediaInput input,
+    public async Task<ActionResult<BaseResponse<PersonSocialMediaResponse?>>> Insert(
+        [FromBody] PersonSocialMediaInput input,
         CancellationToken cancellationToken)
     {
         var result = await service.InsertAsync(input, cancellationToken);
-        return Ok(result);
+        if (result == null)
+            return BadRequest(new BaseResponse<PersonSocialMediaResponse?>(false, Messages.OperationFailed));
+
+        return Ok(new BaseResponse<PersonSocialMediaResponse?>(true, Messages.Created, result));
     }
 
-    [HttpPost("BatchInsert")]
-    public async Task<ActionResult<List<PersonSocialMediaResponse>>> InsertBatch(
+    [HttpPost("insert-batch")]
+    public async Task<ActionResult<BaseResponse<List<PersonSocialMediaResponse>>>> InsertBatch(
         [FromBody] List<PersonSocialMediaInput> inputs,
         CancellationToken cancellationToken)
     {
         var result = await service.InsertAsync(inputs, cancellationToken);
-        return Ok(result);
+        if (!result.Any())
+            return BadRequest(new BaseResponse<List<PersonSocialMediaResponse>>(false, Messages.OperationFailed));
+
+        return Ok(new BaseResponse<List<PersonSocialMediaResponse?>>(true, Messages.Created, result!));
     }
 
-    [HttpPut]
-    public async Task<ActionResult<PersonSocialMediaResponse?>> Update([FromBody] PersonSocialMediaInput input,
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<BaseResponse<PersonSocialMediaResponse?>>> Update(Guid id,
+        [FromBody] PersonSocialMediaInput input,
         CancellationToken cancellationToken)
     {
+        if (id != input.Id)
+            return NotFound(new BaseResponse<PersonSocialMediaResponse?>(false, Messages.NotFound));
+
         var result = await service.UpdateAsync(input, cancellationToken);
-        return Ok(result);
+        if (result == null)
+            return BadRequest(
+                new BaseResponse<PersonSocialMediaResponse?>(false, Messages.OperationFailed));
+
+        return Ok(new BaseResponse<PersonSocialMediaResponse?>(true, Messages.Updated, result));
     }
 
-    [HttpPut("BatchUpdate")]
-    public async Task<ActionResult<List<PersonSocialMediaResponse>>> UpdateBatch(
+    [HttpPut("update-batch")]
+    public async Task<ActionResult<BaseResponse<List<PersonSocialMediaResponse>>>> UpdateBatch(
         [FromBody] List<PersonSocialMediaInput> inputs,
         CancellationToken cancellationToken)
     {
         var result = await service.UpdateAsync(inputs, cancellationToken);
-        return Ok(result);
+        if (!result.Any())
+            return BadRequest(
+                new BaseResponse<List<PersonSocialMediaResponse>>(false, Messages.OperationFailed));
+
+        return Ok(new BaseResponse<List<PersonSocialMediaResponse?>>(true, Messages.Updated, result!));
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult<bool>> Delete(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var result =
-            await service.HardDeleteAsync(new PersonSocialMediaInput { Id = id }, cancellationToken);
-        return Ok(result);
+        var success = await service.HardDeleteAsync(new PersonSocialMediaInput() { Id = id }, cancellationToken);
+        if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
+
+        return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
     }
 
-    [HttpDelete("BatchDelete")]
-    public async Task<ActionResult<bool>> DeleteBatch([FromBody] List<PersonSocialMediaInput> inputs,
+    [HttpDelete("delete-batch")]
+    public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<PersonSocialMediaInput> inputs,
         CancellationToken cancellationToken)
     {
-        var result = await service.HardDeleteAsync(inputs, cancellationToken);
-        return Ok(result);
+        var success = await service.HardDeleteAsync(inputs, cancellationToken);
+        if (!success) return BadRequest(new BaseResponse<bool>(false, message: Messages.OperationFailed));
+
+        return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
     }
 
-    [HttpPost("Count")]
+    [HttpPost("count")]
     public async Task<ActionResult<int>> Count([FromBody] GetAllRequest request, CancellationToken cancellationToken)
     {
         var predicate = request.Expression.DeserializeLambdaExpression<PersonSocialMedia>();

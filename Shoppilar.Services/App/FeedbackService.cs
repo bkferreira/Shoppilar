@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class FeedbackService(IRepo<Feedback> repository) : IFeedbackService
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new FeedbackResponse(entity);
-        return response;
+        var result = new FeedbackResponse(entity);
+        return result;
     }
 
     public async Task<List<FeedbackResponse>> GetAllAsync(Expression<Func<Feedback, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class FeedbackService(IRepo<Feedback> repository) : IFeedbackService
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new FeedbackResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new FeedbackResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<FeedbackResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<FeedbackResponse>> GetPagedAsync(
         Expression<Func<Feedback, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: FeedbackResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class FeedbackService(IRepo<Feedback> repository) : IFeedbackService
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<FeedbackResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<FeedbackResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<FeedbackResponse?>> InsertAsync(FeedbackInput input,
+    public async Task<FeedbackResponse?> InsertAsync(FeedbackInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new Feedback
@@ -63,18 +61,17 @@ public class FeedbackService(IRepo<Feedback> repository) : IFeedbackService
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<FeedbackResponse?>(true, Messages.Created, new FeedbackResponse(entity));
-
-        return response;
+        var result = new FeedbackResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<FeedbackResponse?>> UpdateAsync(FeedbackInput input,
+    public async Task<FeedbackResponse?> UpdateAsync(FeedbackInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
 
         if (entity == null)
-            return new BaseResponse<FeedbackResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.Rating = input.Rating;
         entity.Comment = input.Comment;
@@ -84,9 +81,8 @@ public class FeedbackService(IRepo<Feedback> repository) : IFeedbackService
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<FeedbackResponse?>(true, Messages.Updated, new FeedbackResponse(entity));
-
-        return response;
+        var result = new FeedbackResponse(entity);
+        return result;
     }
 
     public async Task<bool> HardDeleteAsync(FeedbackInput input,
@@ -97,13 +93,13 @@ public class FeedbackService(IRepo<Feedback> repository) : IFeedbackService
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<Feedback, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

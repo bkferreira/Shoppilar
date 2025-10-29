@@ -55,7 +55,7 @@ public sealed class Repo<T>(IDbContextFactory<AppDbContext> contextFactory) : IR
         return await query.AsNoTracking().ToListAsync(cancellationToken);
     }
 
-    public async Task<(List<TModel> Items, int TotalCount)> GetPagedProjectionAsync<TModel>(
+    public async Task<(List<TModel> Items, int TotalCount)> GetPagedAsync<TModel>(
         Expression<Func<T, bool>>? predicate = null,
         Expression<Func<T, TModel>>? selector = null,
         int page = 1,

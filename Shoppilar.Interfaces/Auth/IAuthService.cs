@@ -5,9 +5,12 @@ namespace Shoppilar.Interfaces.Auth;
 
 public interface IAuthService
 {
+    Task<bool> SendPhoneConfirmationCodeAsync(string phoneNumber);
     Task<AuthResponse?> RegisterAsync(RegisterInput input);
     Task<AuthResponse?> LoginAsync(LoginInput input);
-    Task<AuthResponse?> RefreshTokenAsync(string token);
+    Task<bool> SendPasswordResetCodeAsync(string login);
+    Task<bool> ResetPasswordWithCodeAsync(ResetPasswordInput input);
     Task<bool> ChangePasswordAsync(ChangePasswordInput input);
-    Task<bool> RevokeRefreshTokenAsync(string token);
+    Task<AuthResponse?> RefreshTokenAsync(string refreshToken);
+    Task<bool> RevokeRefreshTokenAsync(string refreshToken);
 }

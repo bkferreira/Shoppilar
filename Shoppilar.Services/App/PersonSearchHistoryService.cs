@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class PersonSearchHistoryService(IRepo<PersonSearchHistory> repository) :
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new PersonSearchHistoryResponse(entity);
-        return response;
+        var result = new PersonSearchHistoryResponse(entity);
+        return result;
     }
 
     public async Task<List<PersonSearchHistoryResponse>> GetAllAsync(
@@ -26,17 +25,17 @@ public class PersonSearchHistoryService(IRepo<PersonSearchHistory> repository) :
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new PersonSearchHistoryResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new PersonSearchHistoryResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<PersonSearchHistoryResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<PersonSearchHistoryResponse>> GetPagedAsync(
         Expression<Func<PersonSearchHistory, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: PersonSearchHistoryResponse.Projection,
             page: page,
@@ -44,12 +43,11 @@ public class PersonSearchHistoryService(IRepo<PersonSearchHistory> repository) :
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<PersonSearchHistoryResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<PersonSearchHistoryResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<PersonSearchHistoryResponse?>> InsertAsync(PersonSearchHistoryInput input,
+    public async Task<PersonSearchHistoryResponse?> InsertAsync(PersonSearchHistoryInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new PersonSearchHistory
@@ -62,11 +60,8 @@ public class PersonSearchHistoryService(IRepo<PersonSearchHistory> repository) :
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response =
-            new BaseResponse<PersonSearchHistoryResponse?>(true, Messages.Created,
-                new PersonSearchHistoryResponse(entity));
-
-        return response;
+        var result = new PersonSearchHistoryResponse(entity);
+        return result;
     }
 
     public async Task<bool> HardDeleteAsync(PersonSearchHistoryInput input,
@@ -77,7 +72,6 @@ public class PersonSearchHistoryService(IRepo<PersonSearchHistory> repository) :
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
@@ -99,7 +93,6 @@ public class PersonSearchHistoryService(IRepo<PersonSearchHistory> repository) :
             return false;
 
         var result = await repository.HardDeleteAsync(entities.ToList(), cancellationToken);
-
         return result > 0;
     }
 }

@@ -13,5 +13,7 @@ public partial class AuthShell : Shell
     private void RegisterRoutes()
     {
         Routing.RegisterRoute(nameof(LoginView), typeof(LoginView));
+        Routing.RegisterRoute(nameof(RegisterView), typeof(RegisterView));
+        Routing.RegisterRoute(nameof(ForgotPasswordView), typeof(ForgotPasswordView));
     }
 }

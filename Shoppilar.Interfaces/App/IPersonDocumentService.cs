@@ -15,22 +15,22 @@ public interface IPersonDocumentService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<PersonDocumentResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<PersonDocumentResponse>> GetPagedAsync(
         Expression<Func<PersonDocument, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<PersonDocumentResponse?>> InsertAsync(PersonDocumentInput input,
+    Task<PersonDocumentResponse?> InsertAsync(PersonDocumentInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<List<PersonDocumentResponse>>> InsertAsync(List<PersonDocumentInput> inputs,
+    Task<List<PersonDocumentResponse>> InsertAsync(List<PersonDocumentInput> inputs,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<PersonDocumentResponse?>> UpdateAsync(PersonDocumentInput input,
+    Task<PersonDocumentResponse?> UpdateAsync(PersonDocumentInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<List<PersonDocumentResponse>>> UpdateAsync(List<PersonDocumentInput> inputs,
+    Task<List<PersonDocumentResponse>> UpdateAsync(List<PersonDocumentInput> inputs,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(PersonDocumentInput input, CancellationToken cancellationToken = default);

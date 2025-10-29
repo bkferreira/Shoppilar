@@ -10,7 +10,7 @@ public interface IRepo<T> where T : class
     Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<(List<TModel> Items, int TotalCount)> GetPagedProjectionAsync<TModel>(
+    Task<(List<TModel> Items, int TotalCount)> GetPagedAsync<TModel>(
         Expression<Func<T, bool>>? predicate = null,
         Expression<Func<T, TModel>>? selector = null,
         int page = 1,

@@ -12,17 +12,19 @@ namespace Shoppilar.Api.Controllers
     [Route("[controller]")]
     public class OccurrenceController(IOccurrenceService service) : ControllerBase
     {
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<BaseResponse<OccurrenceResponse?>>> GetById(Guid id, string? includeProperties,
-            CancellationToken cancellationToken)
+        [HttpPost("get")]
+        public async Task<ActionResult<BaseResponse<OccurrenceResponse?>>> GetAsync([FromBody] GetAllRequest request)
         {
-            var occurrence = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-            if (occurrence == null) return NotFound(new BaseResponse<OccurrenceResponse?>(false, Messages.NotFound));
+            var predicate = request.Expression.DeserializeLambdaExpression<Occurrence>();
+            var includes = request.IncludeProperties;
 
-            return Ok(new BaseResponse<OccurrenceResponse?>(true, Messages.Found, occurrence));
+            if (predicate == null) return NotFound(new BaseResponse<OccurrenceResponse>(false, Messages.NotFound));
+
+            var response = await service.GetAsync(predicate, includes);
+            return Ok(new BaseResponse<OccurrenceResponse>(true, Messages.Found, response));
         }
 
-        [HttpPost("all")]
+        [HttpPost("get-all")]
         public async Task<ActionResult<BaseResponse<List<OccurrenceResponse>>>> GetAll([FromBody] GetAllRequest request,
             CancellationToken cancellationToken)
         {
@@ -36,14 +38,14 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<OccurrenceResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<OccurrenceResponse>>>> GetPagedProjection(
+        [HttpPost("get-paged")]
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<OccurrenceResponse>>>> GetPaged(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression?.DeserializeLambdaExpression<Occurrence>();
 
-            var result = await service.GetPagedProjectionAsync(
+            var result = await service.GetPagedAsync(
                 predicate,
                 page: request.Page,
                 pageSize: request.PageSize,
@@ -61,10 +63,10 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await service.InsertAsync(input, cancellationToken);
-            if (!result.Success)
+            if (result == null)
                 return BadRequest(new BaseResponse<OccurrenceResponse?>(false, Messages.OperationFailed));
 
-            return CreatedAtAction(nameof(GetById), new { id = result.Item?.Id }, result);
+            return Ok(new BaseResponse<OccurrenceResponse?>(true, Messages.Found, result));
         }
 
         [HttpPut("{id:guid}")]
@@ -73,30 +75,30 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             if (id != input.Id)
-                return BadRequest(new BaseResponse<OccurrenceResponse?>(false, Messages.OperationFailed));
+                return NotFound(new BaseResponse<OccurrenceResponse?>(false, Messages.NotFound));
 
             var result = await service.UpdateAsync(input, cancellationToken);
-            if (!result.Success)
-                return NotFound(new BaseResponse<OccurrenceResponse?>(false, result.Message ?? Messages.NotFound));
+            if (result == null)
+                return BadRequest(new BaseResponse<OccurrenceResponse?>(false, Messages.OperationFailed));
 
-            return Ok(result);
+            return Ok(new BaseResponse<OccurrenceResponse?>(true, Messages.Found, result));
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
         {
             var success = await service.HardDeleteAsync(new OccurrenceInput { Id = id }, cancellationToken);
-            if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NotFound));
+            if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
         }
 
-        [HttpDelete("batch")]
+        [HttpDelete("delete-batch")]
         public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<OccurrenceInput> inputs,
             CancellationToken cancellationToken)
         {
             var success = await service.HardDeleteAsync(inputs, cancellationToken);
-            if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NoneFound));
+            if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
         }
@@ -109,7 +111,7 @@ namespace Shoppilar.Api.Controllers
             var predicate = request.Expression.DeserializeLambdaExpression<Occurrence>();
             var total = await service.CountAsync(predicate, cancellationToken);
 
-            return Ok(new BaseResponse<int>(true, Messages.Created, total));
+            return Ok(new BaseResponse<int>(true, Messages.Counted, total));
         }
     }
 }

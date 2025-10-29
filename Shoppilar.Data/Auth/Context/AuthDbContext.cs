@@ -9,13 +9,14 @@ namespace Shoppilar.Data.Auth.Context
         : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options)
     {
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<VerificationCode> VerificationCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.HasDefaultSchema("ident");
 
             base.OnModelCreating(builder);
-            
+
             builder.Entity<User>(entity =>
             {
                 entity.HasIndex(u => u.Email).IsUnique();
@@ -31,6 +32,7 @@ namespace Shoppilar.Data.Auth.Context
             builder.Entity<IdentityRoleClaim<Guid>>().ToTable("role_claims");
             builder.Entity<IdentityUserToken<Guid>>().ToTable("user_tokens");
             builder.Entity<RefreshToken>().ToTable("refresh_tokens");
+            builder.Entity<VerificationCode>().ToTable("verification_codes");
 
             builder.Entity<RefreshToken>()
                 .HasOne(rt => rt.User)

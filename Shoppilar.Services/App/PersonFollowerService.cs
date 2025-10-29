@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class PersonFollowerService(IRepo<PersonFollower> repository) : IPersonFo
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new PersonFollowerResponse(entity);
-        return response;
+        var result = new PersonFollowerResponse(entity);
+        return result;
     }
 
     public async Task<List<PersonFollowerResponse>> GetAllAsync(
@@ -26,17 +25,17 @@ public class PersonFollowerService(IRepo<PersonFollower> repository) : IPersonFo
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new PersonFollowerResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new PersonFollowerResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<PersonFollowerResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<PersonFollowerResponse>> GetPagedAsync(
         Expression<Func<PersonFollower, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: PersonFollowerResponse.Projection,
             page: page,
@@ -44,12 +43,11 @@ public class PersonFollowerService(IRepo<PersonFollower> repository) : IPersonFo
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<PersonFollowerResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<PersonFollowerResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<PersonFollowerResponse?>> InsertAsync(PersonFollowerInput input,
+    public async Task<PersonFollowerResponse?> InsertAsync(PersonFollowerInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new PersonFollower
@@ -60,10 +58,8 @@ public class PersonFollowerService(IRepo<PersonFollower> repository) : IPersonFo
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response =
-            new BaseResponse<PersonFollowerResponse?>(true, Messages.Created, new PersonFollowerResponse(entity));
-
-        return response;
+        var result = new PersonFollowerResponse(entity);
+        return result;
     }
 
     public async Task<bool> HardDeleteAsync(PersonFollowerInput input,
@@ -74,13 +70,13 @@ public class PersonFollowerService(IRepo<PersonFollower> repository) : IPersonFo
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<PersonFollower, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

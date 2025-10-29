@@ -12,17 +12,19 @@ namespace Shoppilar.Api.Controllers
     [Route("[controller]")]
     public class FavoriteController(IFavoriteService service) : ControllerBase
     {
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<BaseResponse<FavoriteResponse?>>> GetById(Guid id, string? includeProperties,
-            CancellationToken cancellationToken)
+        [HttpPost("get")]
+        public async Task<ActionResult<BaseResponse<FavoriteResponse?>>> GetAsync([FromBody] GetAllRequest request)
         {
-            var favorite = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-            if (favorite == null) return NotFound(new BaseResponse<FavoriteResponse?>(false, Messages.NotFound));
+            var predicate = request.Expression.DeserializeLambdaExpression<Favorite>();
+            var includes = request.IncludeProperties;
 
-            return Ok(new BaseResponse<FavoriteResponse?>(true, Messages.Found, favorite));
+            if (predicate == null) return NotFound(new BaseResponse<FavoriteResponse>(false, Messages.NotFound));
+
+            var response = await service.GetAsync(predicate, includes);
+            return Ok(new BaseResponse<FavoriteResponse>(true, Messages.Found, response));
         }
 
-        [HttpPost("all")]
+        [HttpPost("get-all")]
         public async Task<ActionResult<BaseResponse<List<FavoriteResponse>>>> GetAll([FromBody] GetAllRequest request,
             CancellationToken cancellationToken)
         {
@@ -36,14 +38,14 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<FavoriteResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<FavoriteResponse>>>> GetPagedProjection(
+        [HttpPost("get-paged")]
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<FavoriteResponse>>>> GetPaged(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression?.DeserializeLambdaExpression<Favorite>();
 
-            var result = await service.GetPagedProjectionAsync(
+            var result = await service.GetPagedAsync(
                 predicate,
                 page: request.Page,
                 pageSize: request.PageSize,
@@ -61,27 +63,27 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await service.InsertAsync(input, cancellationToken);
-            if (!result.Success)
+            if (result == null)
                 return BadRequest(new BaseResponse<FavoriteResponse?>(false, Messages.OperationFailed));
 
-            return CreatedAtAction(nameof(GetById), new { id = result.Item?.Id }, result);
+            return Ok(new BaseResponse<FavoriteResponse?>(true, Messages.Found, result));
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
         {
             var success = await service.HardDeleteAsync(new FavoriteInput { Id = id }, cancellationToken);
-            if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NotFound));
+            if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
         }
 
-        [HttpDelete("batch")]
+        [HttpDelete("delete-batch")]
         public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<FavoriteInput> inputs,
             CancellationToken cancellationToken)
         {
             var success = await service.HardDeleteAsync(inputs, cancellationToken);
-            if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NoneFound));
+            if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
         }
@@ -94,7 +96,7 @@ namespace Shoppilar.Api.Controllers
             var predicate = request.Expression.DeserializeLambdaExpression<Favorite>();
             var total = await service.CountAsync(predicate, cancellationToken);
 
-            return Ok(new BaseResponse<int>(true, Messages.Created, total));
+            return Ok(new BaseResponse<int>(true, Messages.Counted, total));
         }
     }
 }

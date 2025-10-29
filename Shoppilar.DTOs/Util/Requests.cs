@@ -8,6 +8,12 @@ public class GetWithExpression
 public class GetAllRequest : GetWithExpression
 {
     public string? IncludeProperties { get; set; }
+    
+    public GetAllRequest(string? expression, string? includeProperties = null)
+    {
+        Expression = expression;
+        IncludeProperties = includeProperties;
+    }
 }
 
 public class GetPagedRequest : GetWithExpression

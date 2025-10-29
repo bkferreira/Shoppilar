@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class ImageService(IRepo<Image> repository) : IImageService
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new ImageResponse(entity);
-        return response;
+        var result = new ImageResponse(entity);
+        return result;
     }
 
     public async Task<List<ImageResponse>> GetAllAsync(Expression<Func<Image, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class ImageService(IRepo<Image> repository) : IImageService
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new ImageResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new ImageResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<ImageResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<ImageResponse>> GetPagedAsync(
         Expression<Func<Image, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: ImageResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class ImageService(IRepo<Image> repository) : IImageService
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<ImageResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<ImageResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<ImageResponse?>> InsertAsync(ImageInput input,
+    public async Task<ImageResponse?> InsertAsync(ImageInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new Image
@@ -68,12 +66,11 @@ public class ImageService(IRepo<Image> repository) : IImageService
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<ImageResponse?>(true, Messages.Created, new ImageResponse(entity));
-
-        return response;
+        var result = new ImageResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<List<ImageResponse>?>> InsertAsync(
+    public async Task<List<ImageResponse>?> InsertAsync(
         List<ImageInput> inputs,
         CancellationToken cancellationToken = default)
     {
@@ -101,20 +98,17 @@ public class ImageService(IRepo<Image> repository) : IImageService
 
         await repository.InsertAsync(entities, cancellationToken);
 
-        var imageResponses = entities.Select(e => new ImageResponse(e)).ToList();
-
-        var responses = new BaseResponse<List<ImageResponse>?>(true, Messages.Created, imageResponses);
-
-        return responses;
+        var result = entities.Select(e => new ImageResponse(e)).ToList();
+        return result;
     }
 
-    public async Task<BaseResponse<ImageResponse?>> UpdateAsync(ImageInput input,
+    public async Task<ImageResponse?> UpdateAsync(ImageInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
 
         if (entity == null)
-            return new BaseResponse<ImageResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.Size = input.Size;
         entity.Url = input.Url;
@@ -129,21 +123,19 @@ public class ImageService(IRepo<Image> repository) : IImageService
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<ImageResponse?>(true, Messages.Updated, new ImageResponse(entity));
-
-        return response;
+        var result = new ImageResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<List<ImageResponse>>> UpdateAsync(
+    public async Task<List<ImageResponse>> UpdateAsync(
         List<ImageInput>? inputs,
         CancellationToken cancellationToken = default)
     {
         if (inputs == null || !inputs.Any())
-            return new BaseResponse<List<ImageResponse>>(false, Messages.NoneFound,
-                new List<ImageResponse>());
+            return [];
 
         var updatedEntities = new List<Image>();
-        var responses = new List<ImageResponse>();
+        var results = new List<ImageResponse>();
 
         foreach (var input in inputs)
         {
@@ -164,16 +156,14 @@ public class ImageService(IRepo<Image> repository) : IImageService
             entity.EventId = input.EventId;
 
             updatedEntities.Add(entity);
-            responses.Add(new ImageResponse(entity));
+            results.Add(new ImageResponse(entity));
         }
 
         if (!updatedEntities.Any())
-            return new BaseResponse<List<ImageResponse>>(false, Messages.NoneFound,
-                responses);
+            return [];
 
         await repository.UpdateAsync(updatedEntities, cancellationToken);
-
-        return new BaseResponse<List<ImageResponse>>(true, Messages.Updated, responses);
+        return results;
     }
 
     public async Task<bool> HardDeleteAsync(ImageInput input,
@@ -184,7 +174,6 @@ public class ImageService(IRepo<Image> repository) : IImageService
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
@@ -206,13 +195,13 @@ public class ImageService(IRepo<Image> repository) : IImageService
             return false;
 
         var result = await repository.HardDeleteAsync(entities.ToList(), cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<Image, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

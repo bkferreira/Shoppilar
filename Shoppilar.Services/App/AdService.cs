@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class AdService(IRepo<Ad> repository) : IAdService
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new AdResponse(entity);
-        return response;
+        var result = new AdResponse(entity);
+        return result;
     }
 
     public async Task<List<AdResponse>> GetAllAsync(Expression<Func<Ad, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class AdService(IRepo<Ad> repository) : IAdService
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new AdResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new AdResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<AdResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<AdResponse>> GetPagedAsync(
         Expression<Func<Ad, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: AdResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class AdService(IRepo<Ad> repository) : IAdService
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<AdResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<AdResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<AdResponse?>> InsertAsync(AdInput input,
+    public async Task<AdResponse?> InsertAsync(AdInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new Ad()
@@ -96,18 +94,16 @@ public class AdService(IRepo<Ad> repository) : IAdService
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<AdResponse?>(true, Messages.Created, new AdResponse(entity));
-
-        return response;
+        return new AdResponse(entity);
     }
 
-    public async Task<BaseResponse<AdResponse?>> UpdateAsync(AdInput input,
+    public async Task<AdResponse?> UpdateAsync(AdInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
 
         if (entity == null)
-            return new BaseResponse<AdResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.Title = input.Title;
         entity.Description = input.Description;
@@ -124,9 +120,8 @@ public class AdService(IRepo<Ad> repository) : IAdService
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<AdResponse?>(true, Messages.Updated, new AdResponse(entity));
-
-        return response;
+        var result = new AdResponse(entity);
+        return result;
     }
 
     public async Task<bool> DeleteAsync(AdInput input, CancellationToken cancellationToken = default)
@@ -136,7 +131,6 @@ public class AdService(IRepo<Ad> repository) : IAdService
         if (entity == null) return false;
 
         await repository.DeleteAsync(entity, cancellationToken);
-
         return true;
     }
 
@@ -160,13 +154,13 @@ public class AdService(IRepo<Ad> repository) : IAdService
             return false;
 
         await repository.DeleteAsync(entities, cancellationToken);
-
         return true;
     }
 
     public async Task<int> CountAsync(Expression<Func<Ad, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

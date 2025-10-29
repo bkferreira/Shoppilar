@@ -15,22 +15,22 @@ public interface IPersonSocialMediaService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<PersonSocialMediaResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<PersonSocialMediaResponse>> GetPagedAsync(
         Expression<Func<PersonSocialMedia, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<PersonSocialMediaResponse?>> InsertAsync(PersonSocialMediaInput input,
+    Task<PersonSocialMediaResponse?> InsertAsync(PersonSocialMediaInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<List<PersonSocialMediaResponse>>> InsertAsync(List<PersonSocialMediaInput> inputs,
+    Task<List<PersonSocialMediaResponse>> InsertAsync(List<PersonSocialMediaInput> inputs,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<PersonSocialMediaResponse?>> UpdateAsync(PersonSocialMediaInput input,
+    Task<PersonSocialMediaResponse?> UpdateAsync(PersonSocialMediaInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<List<PersonSocialMediaResponse>>> UpdateAsync(List<PersonSocialMediaInput> inputs,
+    Task<List<PersonSocialMediaResponse>> UpdateAsync(List<PersonSocialMediaInput> inputs,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(PersonSocialMediaInput input, CancellationToken cancellationToken = default);

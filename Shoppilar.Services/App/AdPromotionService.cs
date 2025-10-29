@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class AdPromotionService(IRepo<AdPromotion> repository) : IAdPromotionSer
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new AdPromotionResponse(entity);
-        return response;
+        var result = new AdPromotionResponse(entity);
+        return result;
     }
 
     public async Task<List<AdPromotionResponse>> GetAllAsync(Expression<Func<AdPromotion, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class AdPromotionService(IRepo<AdPromotion> repository) : IAdPromotionSer
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new AdPromotionResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new AdPromotionResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<AdPromotionResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<AdPromotionResponse>> GetPagedAsync(
         Expression<Func<AdPromotion, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: AdPromotionResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class AdPromotionService(IRepo<AdPromotion> repository) : IAdPromotionSer
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<AdPromotionResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<AdPromotionResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<AdPromotionResponse?>> InsertAsync(AdPromotionInput input,
+    public async Task<AdPromotionResponse?> InsertAsync(AdPromotionInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new AdPromotion
@@ -62,18 +60,17 @@ public class AdPromotionService(IRepo<AdPromotion> repository) : IAdPromotionSer
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<AdPromotionResponse?>(true, Messages.Created, new AdPromotionResponse(entity));
-
-        return response;
+        var result = new AdPromotionResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<AdPromotionResponse?>> UpdateAsync(AdPromotionInput input,
+    public async Task<AdPromotionResponse?> UpdateAsync(AdPromotionInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
 
         if (entity == null)
-            return new BaseResponse<AdPromotionResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.Description = input.Description;
         entity.Price = input.Price;
@@ -82,9 +79,8 @@ public class AdPromotionService(IRepo<AdPromotion> repository) : IAdPromotionSer
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<AdPromotionResponse?>(true, Messages.Updated, new AdPromotionResponse(entity));
-
-        return response;
+        var result = new AdPromotionResponse(entity);
+        return result;
     }
 
     public async Task<bool> HardDeleteAsync(AdPromotionInput input,
@@ -95,7 +91,6 @@ public class AdPromotionService(IRepo<AdPromotion> repository) : IAdPromotionSer
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
@@ -117,13 +112,13 @@ public class AdPromotionService(IRepo<AdPromotion> repository) : IAdPromotionSer
             return false;
 
         var result = await repository.HardDeleteAsync(entities.ToList(), cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<AdPromotion, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

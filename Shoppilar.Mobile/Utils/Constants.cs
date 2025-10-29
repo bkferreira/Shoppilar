@@ -9,8 +9,12 @@ namespace Shoppilar.Mobile.Utils
     public static class Constants
     {
 #if DEBUG
-        public const string RouteApi = "http://192.168.199.171:5206";
-        public const string RouteAuth = "http://192.168.199.171:5037";
+        public const string NameApi = "Shoppilar.Api";
+        public const string RouteApi = "http://192.168.100.192:5296";
+        // public const string RouteApi = "http://192.168.199.171:5296";
+        public const string NameAuth = "Shoppilar.Auth";
+        public const string RouteAuth = "http://192.168.100.192:5254";
+        // public const string RouteAuth = "http://192.168.199.171:5254";
 #else
         public const string RouteApi = "";
         public const string RouteAuth = "";
@@ -19,6 +23,8 @@ namespace Shoppilar.Mobile.Utils
         public static double DisplayWidth => GetDisplayWidth();
         public static double DisplayHeight => GetDisplayHeight();
         public static string ApplicationDisplayVersion => GetApplicationDisplayVersion();
+        public static Task<string> Token => GetToken();
+        public static Task<string> RefreshToken => GetRefreshToken();
 
         private static double GetDisplayWidth()
         {
@@ -31,6 +37,19 @@ namespace Shoppilar.Mobile.Utils
             var displayInfo = DeviceDisplay.MainDisplayInfo;
             return Math.Round(displayInfo.Height / displayInfo.Density, 0);
         }
+
+        private static async Task<string> GetToken()
+        {
+            // return await SecureStorage.GetAsync(DTOs.Util.Constants.TokenKey) ?? string.Empty;
+            return Preferences.Get(DTOs.Util.Constants.TokenKey, "");
+        }
+
+        private static async Task<string> GetRefreshToken()
+        {
+            // return await SecureStorage.GetAsync(DTOs.Util.Constants.RefreshTokenKey) ?? string.Empty;
+            return Preferences.Get(DTOs.Util.Constants.RefreshTokenKey, "");
+        }
+
 
         private static string GetApplicationDisplayVersion()
         {

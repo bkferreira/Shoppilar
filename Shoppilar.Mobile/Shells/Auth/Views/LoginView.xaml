@@ -1,12 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Shoppilar.Mobile.Shells.Auth.Views.LoginView"
-             xmlns:utils="clr-namespace:Shoppilar.Mobile.Utils"
+             xmlns:components="clr-namespace:Shoppilar.Mobile.Components"
              xmlns:vm="clr-namespace:Shoppilar.Mobile.Shells.Auth.ViewModels"
+             x:Class="Shoppilar.Mobile.Shells.Auth.Views.LoginView"
              x:DataType="vm:LoginViewModel"
-             Shell.NavBarIsVisible="False">
-    
-    
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{AppThemeBinding Light=#ffffff, Dark=#121212}">
+
+    <Grid Padding="25" RowDefinitions="2*,8*">
+        <!-- Header com logo centralizado -->
+        <Grid Grid.Row="0" VerticalOptions="Center">
+            <VerticalStackLayout HorizontalOptions="Center">
+                <Image Source="logo.png" HeightRequest="100" WidthRequest="100" Aspect="AspectFit" />
+                <Label Text="Welcome back!"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       Margin="0,10,0,0"
+                       TextColor="{AppThemeBinding Light=#222, Dark=#eee}" />
+                <Label Text="Sign in to continue"
+                       FontSize="14"
+                       HorizontalOptions="Center"
+                       TextColor="{AppThemeBinding Light=#666, Dark=#aaa}" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Formulário -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="15" VerticalOptions="Center">
+                <components:FloatingEntryView Label="Usuário"
+                                            Text="{Binding Input.Login}" />
+
+                <components:FloatingEntryView Label="Senha"
+                                              IsPassword="True"
+                                              Text="{Binding Input.Password}" />
+                
+                <Button Text="Entrar"
+                        Command="{Binding EntrarCommand}"
+                        BackgroundColor="#007BFF"
+                        TextColor="White"
+                        CornerRadius="8"
+                        HeightRequest="45" />
+
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                    <Label Text="Forgot your password?"
+                           FontSize="13"
+                           TextColor="{AppThemeBinding Light=#666, Dark=#aaa}" />
+                    <Label Text="Recover"
+                           FontSize="13"
+                           TextColor="#007BFF"
+                           FontAttributes="Bold">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ForgotPasswordCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+
+                <BoxView HeightRequest="1" Color="#ddd" Margin="0,20" />
+
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                    <Label Text="Don't have an account?"
+                           FontSize="13"
+                           TextColor="{AppThemeBinding Light=#666, Dark=#aaa}" />
+                    <Label Text="Sign up"
+                           FontSize="13"
+                           TextColor="#007BFF"
+                           FontAttributes="Bold">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding RegisterCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>

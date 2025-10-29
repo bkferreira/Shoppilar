@@ -4,24 +4,27 @@ using Shoppilar.DTOs.App.Response;
 using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces.App;
 
-
 namespace Shoppilar.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class StateController(IStateService service) : ControllerBase
     {
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<BaseResponse<StateResponse?>>> GetById(Guid id, string? includeProperties,
-            CancellationToken cancellationToken)
+        [HttpPost("get")]
+        public async Task<ActionResult<BaseResponse<StateResponse?>>> GetAsync(
+            [FromBody] GetAllRequest request)
         {
-            var state = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-            if (state == null) return NotFound(new BaseResponse<StateResponse?>(false, Messages.NotFound));
+            var predicate = request.Expression.DeserializeLambdaExpression<State>();
+            var includes = request.IncludeProperties;
 
-            return Ok(new BaseResponse<StateResponse?>(true, Messages.Found, state));
+            if (predicate == null)
+                return NotFound(new BaseResponse<StateResponse>(false, Messages.NotFound));
+
+            var response = await service.GetAsync(predicate, includes);
+            return Ok(new BaseResponse<StateResponse>(true, Messages.Found, response));
         }
 
-        [HttpPost("all")]
+        [HttpPost("get-all")]
         public async Task<ActionResult<BaseResponse<List<StateResponse>>>> GetAll([FromBody] GetAllRequest request,
             CancellationToken cancellationToken)
         {
@@ -35,14 +38,14 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<StateResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<StateResponse>>>> GetPagedProjection(
+        [HttpPost("get-paged")]
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<StateResponse>>>> GetPaged(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression?.DeserializeLambdaExpression<State>();
 
-            var result = await service.GetPagedProjectionAsync(
+            var result = await service.GetPagedAsync(
                 predicate,
                 page: request.Page,
                 pageSize: request.PageSize,

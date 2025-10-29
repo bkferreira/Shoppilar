@@ -10,25 +10,26 @@ namespace Shoppilar.Api.Controllers
     [Route("[controller]")]
     public class CityController(ICityService service) : ControllerBase
     {
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<BaseResponse<CityResponse?>>> GetById(Guid id, string? includeProperties,
-            CancellationToken cancellationToken)
+        [HttpPost("get")]
+        public async Task<ActionResult<BaseResponse<CityResponse?>>> GetAsync([FromBody] GetAllRequest request)
         {
-            var city = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-            if (city == null)
-                return NotFound(new BaseResponse<CityResponse?>(false, Messages.NotFound));
+            var predicate = request.Expression.DeserializeLambdaExpression<City>();
+            var includes = request.IncludeProperties;
 
-            return Ok(new BaseResponse<CityResponse?>(true, Messages.Found, city));
+            if (predicate == null) return NotFound(new BaseResponse<CityResponse>(false, Messages.NotFound));
+
+            var response = await service.GetAsync(predicate, includes);
+            return Ok(new BaseResponse<CityResponse>(true, Messages.Found, response));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<CityResponse>>>> GetPagedProjection(
+        [HttpPost("get-paged")]
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<CityResponse>>>> GetPaged(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression?.DeserializeLambdaExpression<City>();
 
-            var result = await service.GetPagedProjectionAsync(
+            var result = await service.GetPagedAsync(
                 predicate,
                 page: request.Page,
                 pageSize: request.PageSize,
@@ -41,7 +42,7 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<PaginatedResponse<CityResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("all")]
+        [HttpPost("get-all")]
         public async Task<ActionResult<BaseResponse<List<CityResponse>>>> GetAll([FromBody] GetAllRequest request,
             CancellationToken cancellationToken)
         {

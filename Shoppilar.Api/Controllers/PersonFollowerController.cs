@@ -12,18 +12,19 @@ namespace Shoppilar.Api.Controllers;
 [Route("[controller]")]
 public class PersonFollowerController(IPersonFollowerService service) : ControllerBase
 {
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<BaseResponse<PersonFollowerResponse?>>> GetById(Guid id, string? includeProperties,
-        CancellationToken cancellationToken)
+    [HttpPost("get")]
+    public async Task<ActionResult<BaseResponse<PersonFollowerResponse?>>> GetAsync([FromBody] GetAllRequest request)
     {
-        var follower = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-        if (follower == null)
-            return NotFound(new BaseResponse<PersonFollowerResponse?>(false, "Seguidor não encontrado"));
+        var predicate = request.Expression.DeserializeLambdaExpression<PersonFollower>();
+        var includes = request.IncludeProperties;
 
-        return Ok(new BaseResponse<PersonFollowerResponse?>(true, "Seguidor encontrado", follower));
+        if (predicate == null) return NotFound(new BaseResponse<PersonFollowerResponse>(false, Messages.NotFound));
+
+        var response = await service.GetAsync(predicate, includes);
+        return Ok(new BaseResponse<PersonFollowerResponse>(true, Messages.Found, response));
     }
 
-    [HttpPost("all")]
+    [HttpPost("get-all")]
     public async Task<ActionResult<BaseResponse<List<PersonFollowerResponse>>>> GetAll([FromBody] GetAllRequest request,
         CancellationToken cancellationToken)
     {
@@ -32,19 +33,19 @@ public class PersonFollowerController(IPersonFollowerService service) : Controll
         var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
         if (!result.Any())
-            return NotFound(new BaseResponse<List<PersonFollowerResponse>>(false, "Nenhum seguidor encontrado"));
+            return NotFound(new BaseResponse<List<PersonFollowerResponse>>(false, Messages.NoneFound));
 
-        return Ok(new BaseResponse<List<PersonFollowerResponse>>(true, "Seguidores encontrados", result));
+        return Ok(new BaseResponse<List<PersonFollowerResponse>>(true, Messages.Found, result));
     }
 
-    [HttpPost("paged")]
-    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonFollowerResponse>>>> GetPagedProjection(
+    [HttpPost("get-paged")]
+    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonFollowerResponse>>>> GetPaged(
         [FromBody] GetPagedRequest request,
         CancellationToken cancellationToken)
     {
         var predicate = request.Expression?.DeserializeLambdaExpression<PersonFollower>();
 
-        var result = await service.GetPagedProjectionAsync(
+        var result = await service.GetPagedAsync(
             predicate,
             page: request.Page,
             pageSize: request.PageSize,
@@ -62,19 +63,19 @@ public class PersonFollowerController(IPersonFollowerService service) : Controll
         CancellationToken cancellationToken)
     {
         var result = await service.InsertAsync(input, cancellationToken);
-        if (!result.Success)
-            return BadRequest(new BaseResponse<PersonFollowerResponse?>(false, "Falha ao criar seguidor"));
+        if (result == null)
+            return BadRequest(new BaseResponse<PersonFollowerResponse?>(false, Messages.OperationFailed));
 
-        return CreatedAtAction(nameof(GetById), new { id = result.Item?.Id }, result);
+        return Ok(new BaseResponse<PersonFollowerResponse?>(true, Messages.Created, result));
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
     {
         var success = await service.HardDeleteAsync(new PersonFollowerInput { Id = id }, cancellationToken);
-        if (!success) return NotFound(new BaseResponse<bool>(false, "Seguidor não encontrado"));
+        if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
-        return Ok(new BaseResponse<bool>(true, "Seguidor deletado", true));
+        return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
     }
 
     [HttpPost("count")]
@@ -84,6 +85,6 @@ public class PersonFollowerController(IPersonFollowerService service) : Controll
         var predicate = request.Expression.DeserializeLambdaExpression<PersonFollower>();
         var total = await service.CountAsync(predicate, cancellationToken);
 
-        return Ok(new BaseResponse<int>(true, "Contagem realizada", total));
+        return Ok(new BaseResponse<int>(true, Messages.Counted, total));
     }
 }
