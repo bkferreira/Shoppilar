@@ -15,16 +15,16 @@ public interface IAdPromotionService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<AdPromotionResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<AdPromotionResponse>> GetPagedAsync(
         Expression<Func<AdPromotion, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<AdPromotionResponse?>> InsertAsync(AdPromotionInput input,
+    Task<AdPromotionResponse?> InsertAsync(AdPromotionInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<AdPromotionResponse?>> UpdateAsync(AdPromotionInput input,
+    Task<AdPromotionResponse?> UpdateAsync(AdPromotionInput input,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(AdPromotionInput input, CancellationToken cancellationToken = default);

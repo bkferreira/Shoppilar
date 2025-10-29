@@ -15,13 +15,13 @@ public interface IPersonFollowerService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<PersonFollowerResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<PersonFollowerResponse>> GetPagedAsync(
         Expression<Func<PersonFollower, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<PersonFollowerResponse?>> InsertAsync(PersonFollowerInput input,
+    Task<PersonFollowerResponse?> InsertAsync(PersonFollowerInput input,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(PersonFollowerInput input, CancellationToken cancellationToken = default);

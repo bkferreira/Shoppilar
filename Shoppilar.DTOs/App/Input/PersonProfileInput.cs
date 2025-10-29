@@ -8,7 +8,7 @@ public class PersonInput
     public Guid? CreatedById { get; set; }
     public Guid PersonTypeId { get; set; }
     public string Name { get; set; }
-    public DateTime Birth { get; set; }
+    public DateTime? Birth { get; set; }
     public Guid? ImageId { get; set; }
     public List<PersonAddressInput>? Addresses { get; set; }
     public List<PersonDocumentInput>? Documents { get; set; }

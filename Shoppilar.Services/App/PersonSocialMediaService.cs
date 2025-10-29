@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new PersonSocialMediaResponse(entity);
-        return response;
+        var result = new PersonSocialMediaResponse(entity);
+        return result;
     }
 
     public async Task<List<PersonSocialMediaResponse>> GetAllAsync(
@@ -26,17 +25,17 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new PersonSocialMediaResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new PersonSocialMediaResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<PersonSocialMediaResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<PersonSocialMediaResponse>> GetPagedAsync(
         Expression<Func<PersonSocialMedia, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: PersonSocialMediaResponse.Projection,
             page: page,
@@ -44,12 +43,11 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<PersonSocialMediaResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<PersonSocialMediaResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<PersonSocialMediaResponse?>> InsertAsync(PersonSocialMediaInput input,
+    public async Task<PersonSocialMediaResponse?> InsertAsync(PersonSocialMediaInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new PersonSocialMedia
@@ -61,13 +59,11 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response =
-            new BaseResponse<PersonSocialMediaResponse?>(true, Messages.Created, new PersonSocialMediaResponse(entity));
-
-        return response;
+        var result = new PersonSocialMediaResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<List<PersonSocialMediaResponse>>> InsertAsync(List<PersonSocialMediaInput> inputs,
+    public async Task<List<PersonSocialMediaResponse>> InsertAsync(List<PersonSocialMediaInput> inputs,
         CancellationToken cancellationToken = default)
     {
         var entities = inputs.Select(input => new PersonSocialMedia
@@ -79,17 +75,17 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
 
         await repository.InsertAsync(entities, cancellationToken);
 
-        var responses = entities.Select(e => new PersonSocialMediaResponse(e)).ToList();
-        return new BaseResponse<List<PersonSocialMediaResponse>>(true, Messages.Created, responses);
+        var results = entities.Select(e => new PersonSocialMediaResponse(e)).ToList();
+        return results;
     }
 
-    public async Task<BaseResponse<PersonSocialMediaResponse?>> UpdateAsync(PersonSocialMediaInput input,
+    public async Task<PersonSocialMediaResponse?> UpdateAsync(PersonSocialMediaInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
 
         if (entity == null)
-            return new BaseResponse<PersonSocialMediaResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.ProfileUrl = input.ProfileUrl;
         entity.PersonId = input.PersonId;
@@ -97,16 +93,14 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response =
-            new BaseResponse<PersonSocialMediaResponse?>(true, Messages.Updated, new PersonSocialMediaResponse(entity));
-
-        return response;
+        var result = new PersonSocialMediaResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<List<PersonSocialMediaResponse>>> UpdateAsync(List<PersonSocialMediaInput> inputs,
+    public async Task<List<PersonSocialMediaResponse>> UpdateAsync(List<PersonSocialMediaInput> inputs,
         CancellationToken cancellationToken = default)
     {
-        var responses = new List<PersonSocialMediaResponse>();
+        var results = new List<PersonSocialMediaResponse>();
 
         foreach (var input in inputs)
         {
@@ -118,10 +112,10 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
             entity.SocialMediaTypeId = input.SocialMediaTypeId;
 
             await repository.UpdateAsync(entity, cancellationToken);
-            responses.Add(new PersonSocialMediaResponse(entity));
+            results.Add(new PersonSocialMediaResponse(entity));
         }
 
-        return new BaseResponse<List<PersonSocialMediaResponse>>(true, Messages.Updated, responses);
+        return results;
     }
 
     public async Task<bool> HardDeleteAsync(PersonSocialMediaInput input,
@@ -132,7 +126,6 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
@@ -154,13 +147,13 @@ public class PersonSocialMediaService(IRepo<PersonSocialMedia> repository) : IPe
             return false;
 
         var result = await repository.HardDeleteAsync(entities.ToList(), cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<PersonSocialMedia, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class OccurrenceService(IRepo<Occurrence> repository) : IOccurrenceServic
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new OccurrenceResponse(entity);
-        return response;
+        var result = new OccurrenceResponse(entity);
+        return result;
     }
 
     public async Task<List<OccurrenceResponse>> GetAllAsync(Expression<Func<Occurrence, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class OccurrenceService(IRepo<Occurrence> repository) : IOccurrenceServic
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new OccurrenceResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new OccurrenceResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<OccurrenceResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<OccurrenceResponse>> GetPagedAsync(
         Expression<Func<Occurrence, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: OccurrenceResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class OccurrenceService(IRepo<Occurrence> repository) : IOccurrenceServic
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<OccurrenceResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<OccurrenceResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<OccurrenceResponse?>> InsertAsync(OccurrenceInput input,
+    public async Task<OccurrenceResponse?> InsertAsync(OccurrenceInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new Occurrence
@@ -66,18 +64,17 @@ public class OccurrenceService(IRepo<Occurrence> repository) : IOccurrenceServic
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<OccurrenceResponse?>(true, Messages.Created, new OccurrenceResponse(entity));
-
-        return response;
+        var result = new OccurrenceResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<OccurrenceResponse?>> UpdateAsync(OccurrenceInput input,
+    public async Task<OccurrenceResponse?> UpdateAsync(OccurrenceInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
 
         if (entity == null)
-            return new BaseResponse<OccurrenceResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.Description = input.Description;
         entity.ResolutionComment = input.ResolutionComment;
@@ -90,9 +87,8 @@ public class OccurrenceService(IRepo<Occurrence> repository) : IOccurrenceServic
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<OccurrenceResponse?>(true, Messages.Updated, new OccurrenceResponse(entity));
-
-        return response;
+        var result = new OccurrenceResponse(entity);
+        return result;
     }
 
     public async Task<bool> HardDeleteAsync(OccurrenceInput input,
@@ -103,7 +99,6 @@ public class OccurrenceService(IRepo<Occurrence> repository) : IOccurrenceServic
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
@@ -125,13 +120,13 @@ public class OccurrenceService(IRepo<Occurrence> repository) : IOccurrenceServic
             return false;
 
         var result = await repository.HardDeleteAsync(entities.ToList(), cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<Occurrence, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class AdLikeService(IRepo<AdLike> repository) : IAdLikeService
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new AdLikeResponse(entity);
-        return response;
+        var result = new AdLikeResponse(entity);
+        return result;
     }
 
     public async Task<List<AdLikeResponse>> GetAllAsync(Expression<Func<AdLike, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class AdLikeService(IRepo<AdLike> repository) : IAdLikeService
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new AdLikeResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new AdLikeResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<AdLikeResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<AdLikeResponse>> GetPagedAsync(
         Expression<Func<AdLike, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: AdLikeResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class AdLikeService(IRepo<AdLike> repository) : IAdLikeService
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<AdLikeResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<AdLikeResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<AdLikeResponse?>> InsertAsync(AdLikeInput input,
+    public async Task<AdLikeResponse?> InsertAsync(AdLikeInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new AdLike
@@ -60,9 +58,8 @@ public class AdLikeService(IRepo<AdLike> repository) : IAdLikeService
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<AdLikeResponse?>(true, Messages.Created, new AdLikeResponse(entity));
-
-        return response;
+        var result = new AdLikeResponse(entity);
+        return result;
     }
 
     public async Task<bool> HardDeleteAsync(AdLikeInput input,
@@ -73,13 +70,13 @@ public class AdLikeService(IRepo<AdLike> repository) : IAdLikeService
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<AdLike, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

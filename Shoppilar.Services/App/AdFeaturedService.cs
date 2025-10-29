@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class AdFeaturedService(IRepo<AdFeatured> repository) : IAdFeaturedServic
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new AdFeaturedResponse(entity);
-        return response;
+        var result = new AdFeaturedResponse(entity);
+        return result;
     }
 
     public async Task<List<AdFeaturedResponse>> GetAllAsync(Expression<Func<AdFeatured, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class AdFeaturedService(IRepo<AdFeatured> repository) : IAdFeaturedServic
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new AdFeaturedResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new AdFeaturedResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<AdFeaturedResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<AdFeaturedResponse>> GetPagedAsync(
         Expression<Func<AdFeatured, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: AdFeaturedResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class AdFeaturedService(IRepo<AdFeatured> repository) : IAdFeaturedServic
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<AdFeaturedResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<AdFeaturedResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<AdFeaturedResponse?>> InsertAsync(AdFeaturedInput input,
+    public async Task<AdFeaturedResponse?> InsertAsync(AdFeaturedInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new AdFeatured
@@ -61,18 +59,17 @@ public class AdFeaturedService(IRepo<AdFeatured> repository) : IAdFeaturedServic
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<AdFeaturedResponse?>(true, Messages.Created, new AdFeaturedResponse(entity));
-
-        return response;
+        var result = new AdFeaturedResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<AdFeaturedResponse?>> UpdateAsync(AdFeaturedInput input,
+    public async Task<AdFeaturedResponse?> UpdateAsync(AdFeaturedInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
 
         if (entity == null)
-            return new BaseResponse<AdFeaturedResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.Description = input.Description;
         entity.ExpirationDate = input.ExpirationDate;
@@ -80,9 +77,8 @@ public class AdFeaturedService(IRepo<AdFeatured> repository) : IAdFeaturedServic
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<AdFeaturedResponse?>(true, Messages.Updated, new AdFeaturedResponse(entity));
-
-        return response;
+        var result = new AdFeaturedResponse(entity);
+        return result;
     }
 
     public async Task<bool> HardDeleteAsync(AdFeaturedInput input,
@@ -93,7 +89,6 @@ public class AdFeaturedService(IRepo<AdFeatured> repository) : IAdFeaturedServic
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
@@ -115,13 +110,13 @@ public class AdFeaturedService(IRepo<AdFeatured> repository) : IAdFeaturedServic
             return false;
 
         var result = await repository.HardDeleteAsync(entities.ToList(), cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<AdFeatured, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

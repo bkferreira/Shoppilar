@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class FavoriteService(IRepo<Favorite> repository) : IFavoriteService
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new FavoriteResponse(entity);
-        return response;
+        var result = new FavoriteResponse(entity);
+        return result;
     }
 
     public async Task<List<FavoriteResponse>> GetAllAsync(Expression<Func<Favorite, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class FavoriteService(IRepo<Favorite> repository) : IFavoriteService
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new FavoriteResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new FavoriteResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<FavoriteResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<FavoriteResponse>> GetPagedAsync(
         Expression<Func<Favorite, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: FavoriteResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class FavoriteService(IRepo<Favorite> repository) : IFavoriteService
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<FavoriteResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<FavoriteResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<FavoriteResponse?>> InsertAsync(FavoriteInput input,
+    public async Task<FavoriteResponse?> InsertAsync(FavoriteInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new Favorite
@@ -61,9 +59,8 @@ public class FavoriteService(IRepo<Favorite> repository) : IFavoriteService
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response = new BaseResponse<FavoriteResponse?>(true, Messages.Created, new FavoriteResponse(entity));
-
-        return response;
+        var result = new FavoriteResponse(entity);
+        return result;
     }
 
     public async Task<bool> HardDeleteAsync(FavoriteInput input,
@@ -74,7 +71,6 @@ public class FavoriteService(IRepo<Favorite> repository) : IFavoriteService
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
@@ -96,13 +92,13 @@ public class FavoriteService(IRepo<Favorite> repository) : IFavoriteService
             return false;
 
         var result = await repository.HardDeleteAsync(entities.ToList(), cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<Favorite, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

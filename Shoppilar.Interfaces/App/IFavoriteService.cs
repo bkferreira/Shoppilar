@@ -15,13 +15,13 @@ public interface IFavoriteService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<FavoriteResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<FavoriteResponse>> GetPagedAsync(
         Expression<Func<Favorite, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<FavoriteResponse?>> InsertAsync(FavoriteInput input,
+    Task<FavoriteResponse?> InsertAsync(FavoriteInput input,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(FavoriteInput input, CancellationToken cancellationToken = default);

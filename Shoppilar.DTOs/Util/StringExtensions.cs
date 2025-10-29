@@ -9,6 +9,34 @@ namespace Shoppilar.DTOs.Util;
 
 public static class ExpressionExtensions
 {
+    public static string Serialize<T>(this T expression) where T : Expression
+    {
+        var remoteExpression = expression.ToRemoteLinqExpression();
+        var serializerOptions = new JsonSerializerOptions().ConfigureRemoteLinq();
+        var json = JsonSerializer.Serialize(remoteExpression, serializerOptions);
+        return json;
+    }
+
+    public static Expression<Func<T, bool>> CombineExpressions<T>(
+        this Expression<Func<T, bool>> expr1,
+        Expression<Func<T, bool>> expr2,
+        ExpressionType type = ExpressionType.AndAlso)
+    {
+        var parameter = Expression.Parameter(typeof(T));
+
+        Expression body1 = Expression.Invoke(expr1, parameter);
+        Expression body2 = Expression.Invoke(expr2, parameter);
+
+        var combinedBody = type switch
+        {
+            ExpressionType.AndAlso => Expression.AndAlso(body1, body2),
+            ExpressionType.OrElse => Expression.OrElse(body1, body2),
+            _ => throw new ArgumentException("Tipo de expressão não suportado para combinação.")
+        };
+
+        return Expression.Lambda<Func<T, bool>>(combinedBody, parameter);
+    }
+
     public static Expression<Func<T, bool>>? DeserializeLambdaExpression<T>(this string? json)
     {
         if (string.IsNullOrWhiteSpace(json)) return null;

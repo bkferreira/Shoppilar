@@ -12,17 +12,19 @@ namespace Shoppilar.Api.Controllers
     [Route("[controller]")]
     public class ImageController(IImageService service) : ControllerBase
     {
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<BaseResponse<ImageResponse?>>> GetById(Guid id, string? includeProperties,
-            CancellationToken cancellationToken)
+        [HttpPost("get")]
+        public async Task<ActionResult<BaseResponse<ImageResponse?>>> GetAsync([FromBody] GetAllRequest request)
         {
-            var image = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-            if (image == null) return NotFound(new BaseResponse<ImageResponse?>(false, Messages.NotFound));
+            var predicate = request.Expression.DeserializeLambdaExpression<Image>();
+            var includes = request.IncludeProperties;
 
-            return Ok(new BaseResponse<ImageResponse?>(true, Messages.Found, image));
+            if (predicate == null) return NotFound(new BaseResponse<ImageResponse>(false, Messages.NotFound));
+
+            var response = await service.GetAsync(predicate, includes);
+            return Ok(new BaseResponse<ImageResponse>(true, Messages.Found, response));
         }
 
-        [HttpPost("all")]
+        [HttpPost("get-all")]
         public async Task<ActionResult<BaseResponse<List<ImageResponse>>>> GetAll([FromBody] GetAllRequest request,
             CancellationToken cancellationToken)
         {
@@ -36,14 +38,14 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<ImageResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<ImageResponse>>>> GetPagedProjection(
+        [HttpPost("get-paged")]
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<ImageResponse>>>> GetPaged(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression?.DeserializeLambdaExpression<Image>();
 
-            var result = await service.GetPagedProjectionAsync(
+            var result = await service.GetPagedAsync(
                 predicate,
                 page: request.Page,
                 pageSize: request.PageSize,
@@ -61,22 +63,22 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await service.InsertAsync(input, cancellationToken);
-            if (!result.Success)
+            if (result == null)
                 return BadRequest(new BaseResponse<ImageResponse?>(false, Messages.OperationFailed));
 
-            return CreatedAtAction(nameof(GetById), new { id = result.Item?.Id }, result);
+            return Ok(new BaseResponse<ImageResponse?>(true, Messages.Found, result));
         }
 
-        [HttpPost("batch")]
+        [HttpPost("create-batch")]
         public async Task<ActionResult<BaseResponse<List<ImageResponse>?>>> CreateBatch(
             [FromBody] List<ImageInput> inputs,
             CancellationToken cancellationToken)
         {
             var result = await service.InsertAsync(inputs, cancellationToken);
-            if (!result.Success)
+            if (result == null || !result.Any())
                 return BadRequest(new BaseResponse<List<ImageResponse>?>(false, Messages.OperationFailed));
 
-            return Ok(result);
+            return Ok(new BaseResponse<List<ImageResponse?>>(true, Messages.Found, result!));
         }
 
         [HttpPut]
@@ -84,39 +86,39 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await service.UpdateAsync(input, cancellationToken);
-            if (!result.Success)
-                return NotFound(new BaseResponse<ImageResponse?>(false, result.Message ?? Messages.NotFound));
+            if (result == null)
+                return BadRequest(new BaseResponse<ImageResponse?>(false, Messages.OperationFailed));
 
-            return Ok(result);
+            return Ok(new BaseResponse<ImageResponse?>(true, Messages.Found, result));
         }
 
-        [HttpPut("batch")]
+        [HttpPut("update-batch")]
         public async Task<ActionResult<BaseResponse<List<ImageResponse>>>> UpdateBatch(
             [FromBody] List<ImageInput> inputs,
             CancellationToken cancellationToken)
         {
             var result = await service.UpdateAsync(inputs, cancellationToken);
-            if (!result.Success)
-                return NotFound(new BaseResponse<List<ImageResponse>>(false, result.Message ?? Messages.NotFound));
+            if (!result.Any())
+                return BadRequest(new BaseResponse<List<ImageResponse>>(false, Messages.OperationFailed));
 
-            return Ok(result);
+            return Ok(new BaseResponse<List<ImageResponse?>>(true, Messages.Found, result!));
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
         {
             var success = await service.HardDeleteAsync(new ImageInput { Id = id }, cancellationToken);
-            if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NotFound));
+            if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
         }
 
-        [HttpDelete("batch")]
+        [HttpDelete("delete-batch")]
         public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<ImageInput> inputs,
             CancellationToken cancellationToken)
         {
             var success = await service.HardDeleteAsync(inputs, cancellationToken);
-            if (!success) return NotFound(new BaseResponse<bool>(false, Messages.NoneFound));
+            if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
         }
@@ -129,7 +131,7 @@ namespace Shoppilar.Api.Controllers
             var predicate = request.Expression.DeserializeLambdaExpression<Image>();
             var total = await service.CountAsync(predicate, cancellationToken);
 
-            return Ok(new BaseResponse<int>(true, Messages.Created, total));
+            return Ok(new BaseResponse<int>(true, Messages.Counted, total));
         }
     }
 }

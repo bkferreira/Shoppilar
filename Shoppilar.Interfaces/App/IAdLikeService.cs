@@ -14,13 +14,13 @@ public interface IAdLikeService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<AdLikeResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<AdLikeResponse>> GetPagedAsync(
         Expression<Func<AdLike, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<AdLikeResponse?>> InsertAsync(AdLikeInput input,
+    Task<AdLikeResponse?> InsertAsync(AdLikeInput input,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(AdLikeInput input, CancellationToken cancellationToken = default);

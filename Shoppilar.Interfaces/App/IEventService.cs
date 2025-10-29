@@ -15,16 +15,16 @@ public interface IEventService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<EventResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<EventResponse>> GetPagedAsync(
         Expression<Func<Event, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<EventResponse?>> InsertAsync(EventInput input,
+    Task<EventResponse?> InsertAsync(EventInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<EventResponse?>> UpdateAsync(EventInput input,
+    Task<EventResponse?> UpdateAsync(EventInput input,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(EventInput input, CancellationToken cancellationToken = default);

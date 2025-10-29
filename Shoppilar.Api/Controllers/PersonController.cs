@@ -5,40 +5,46 @@ using Shoppilar.DTOs.App.Response;
 using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces.App;
 
-
 namespace Shoppilar.Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
 public class PersonController(IPersonService service) : ControllerBase
 {
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<PersonResponse?>> GetAsync(Guid id, string? includeProperties,
-        CancellationToken cancellationToken)
+    [HttpPost("get")]
+    public async Task<ActionResult<BaseResponse<PersonResponse?>>> GetAsync([FromBody] GetAllRequest request)
     {
-        var result = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-        if (result == null) return NotFound("Usuário não encontrado");
-        return Ok(result);
+        var predicate = request.Expression.DeserializeLambdaExpression<Person>();
+        var includes = request.IncludeProperties;
+
+        if (predicate == null) return NotFound(new BaseResponse<PersonResponse>(false, Messages.NotFound));
+
+        var response = await service.GetAsync(predicate, includes);
+        return Ok(new BaseResponse<PersonResponse>(true, Messages.Found, response));
     }
 
-    [HttpPost("GetAll")]
-    public async Task<ActionResult<List<PersonResponse>>> GetAll([FromBody] GetAllRequest request,
+    [HttpPost("get-all")]
+    public async Task<ActionResult<BaseResponse<List<PersonResponse>>>> GetAll([FromBody] GetAllRequest request,
         CancellationToken cancellationToken)
     {
         var predicate = request.Expression.DeserializeLambdaExpression<Person>();
         var includes = request.IncludeProperties;
         var result = await service.GetAllAsync(predicate, includes, cancellationToken);
-        return Ok(result);
+
+        if (!result.Any())
+            return NotFound(new BaseResponse<List<PersonResponse>>(false, Messages.NoneFound));
+
+        return Ok(new BaseResponse<List<PersonResponse>>(true, Messages.Found, result));
     }
 
-    [HttpPost("paged")]
-    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonResponse>>>> GetPagedProjection(
+    [HttpPost("get-paged")]
+    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonResponse>>>> GetPaged(
         [FromBody] GetPagedRequest request,
         CancellationToken cancellationToken)
     {
         var predicate = request.Expression?.DeserializeLambdaExpression<Person>();
 
-        var result = await service.GetPagedProjectionAsync(
+        var result = await service.GetPagedAsync(
             predicate,
             page: request.Page,
             pageSize: request.PageSize,
@@ -51,35 +57,38 @@ public class PersonController(IPersonService service) : ControllerBase
         return Ok(new BaseResponse<PaginatedResponse<PersonResponse>>(true, Messages.Found, result));
     }
 
-    // [HttpPost]
-    // public async Task<ActionResult<PersonResponse?>> Insert([FromBody] PersonInput input,
-    //     CancellationToken cancellationToken)
-    // {
-    //     var result = await PersonService.InsertAsync(input, cancellationToken);
-    //     return Ok(result);
-    // }
-
-    [HttpPut]
-    public async Task<ActionResult<PersonResponse?>> Update([FromBody] PersonInput input,
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<BaseResponse<PersonResponse?>>> Update(Guid id,
+        [FromBody] PersonInput input,
         CancellationToken cancellationToken)
     {
+        if (id != input.Id)
+            return NotFound(new BaseResponse<PersonResponse?>(false, Messages.NotFound));
+
         var result = await service.UpdateAsync(input, cancellationToken);
-        return Ok(result);
+        if (result == null)
+            return BadRequest(
+                new BaseResponse<PersonResponse?>(false, Messages.OperationFailed));
+
+        return Ok(new BaseResponse<PersonResponse?>(true, Messages.Updated, result));
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult<bool>> Delete(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var result = await service.DeleteAsync(new PersonInput { Id = id }, cancellationToken);
-        return Ok(result);
+        var success = await service.DeleteAsync(new PersonInput { Id = id }, cancellationToken);
+        if (!success) return BadRequest(new BaseResponse<bool>(false, message: Messages.OperationFailed));
+
+        return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
     }
 
-    [HttpPost("Count")]
-    public async Task<ActionResult<int>> Count([FromBody] GetAllRequest request,
+    [HttpPost("count")]
+    public async Task<ActionResult<BaseResponse<int>>> Count([FromBody] GetAllRequest request,
         CancellationToken cancellationToken)
     {
         var predicate = request.Expression.DeserializeLambdaExpression<Person>();
-        var result = await service.CountAsync(predicate, cancellationToken);
-        return Ok(result);
+        var total = await service.CountAsync(predicate, cancellationToken);
+
+        return Ok(new BaseResponse<int>(true, Messages.Counted, total));
     }
 }

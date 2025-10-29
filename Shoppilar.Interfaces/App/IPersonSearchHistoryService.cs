@@ -15,13 +15,13 @@ public interface IPersonSearchHistoryService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<PersonSearchHistoryResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<PersonSearchHistoryResponse>> GetPagedAsync(
         Expression<Func<PersonSearchHistory, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<PersonSearchHistoryResponse?>> InsertAsync(PersonSearchHistoryInput input,
+    Task<PersonSearchHistoryResponse?> InsertAsync(PersonSearchHistoryInput input,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(PersonSearchHistoryInput input, CancellationToken cancellationToken = default);

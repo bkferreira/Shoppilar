@@ -15,22 +15,22 @@ public interface IImageService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<ImageResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<ImageResponse>> GetPagedAsync(
         Expression<Func<Image, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<ImageResponse?>> InsertAsync(ImageInput input,
+    Task<ImageResponse?> InsertAsync(ImageInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<List<ImageResponse>?>> InsertAsync(List<ImageInput> inputs,
+    Task<List<ImageResponse>?> InsertAsync(List<ImageInput> inputs,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<ImageResponse?>> UpdateAsync(ImageInput input,
+    Task<ImageResponse?> UpdateAsync(ImageInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<List<ImageResponse>>> UpdateAsync(List<ImageInput> inputs,
+    Task<List<ImageResponse>> UpdateAsync(List<ImageInput> inputs,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(ImageInput input, CancellationToken cancellationToken = default);

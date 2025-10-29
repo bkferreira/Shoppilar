@@ -15,16 +15,16 @@ public interface IOccurrenceService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<OccurrenceResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<OccurrenceResponse>> GetPagedAsync(
         Expression<Func<Occurrence, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<OccurrenceResponse?>> InsertAsync(OccurrenceInput input,
+    Task<OccurrenceResponse?> InsertAsync(OccurrenceInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<OccurrenceResponse?>> UpdateAsync(OccurrenceInput input,
+    Task<OccurrenceResponse?> UpdateAsync(OccurrenceInput input,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(OccurrenceInput input, CancellationToken cancellationToken = default);

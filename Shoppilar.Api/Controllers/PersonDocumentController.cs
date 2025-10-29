@@ -12,17 +12,19 @@ namespace Shoppilar.Api.Controllers;
 [Route("[controller]")]
 public class PersonDocumentController(IPersonDocumentService service) : ControllerBase
 {
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<BaseResponse<PersonDocumentResponse?>>> GetById(Guid id, string? includeProperties,
-        CancellationToken cancellationToken)
+    [HttpPost("get")]
+    public async Task<ActionResult<BaseResponse<PersonDocumentResponse?>>> GetAsync([FromBody] GetAllRequest request)
     {
-        var doc = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-        if (doc == null) return NotFound(new BaseResponse<PersonDocumentResponse?>(false, "Documento não encontrado"));
+        var predicate = request.Expression.DeserializeLambdaExpression<PersonDocument>();
+        var includes = request.IncludeProperties;
 
-        return Ok(new BaseResponse<PersonDocumentResponse?>(true, "Documento encontrado", doc));
+        if (predicate == null) return NotFound(new BaseResponse<PersonDocumentResponse>(false, Messages.NotFound));
+
+        var response = await service.GetAsync(predicate, includes);
+        return Ok(new BaseResponse<PersonDocumentResponse>(true, Messages.Found, response));
     }
 
-    [HttpPost("all")]
+    [HttpPost("get-all")]
     public async Task<ActionResult<BaseResponse<List<PersonDocumentResponse>>>> GetAll([FromBody] GetAllRequest request,
         CancellationToken cancellationToken)
     {
@@ -31,19 +33,19 @@ public class PersonDocumentController(IPersonDocumentService service) : Controll
         var result = await service.GetAllAsync(predicate, includes, cancellationToken);
 
         if (!result.Any())
-            return NotFound(new BaseResponse<List<PersonDocumentResponse>>(false, "Nenhum documento encontrado"));
+            return NotFound(new BaseResponse<List<PersonDocumentResponse>>(false, Messages.NoneFound));
 
-        return Ok(new BaseResponse<List<PersonDocumentResponse>>(true, "Documentos encontrados", result));
+        return Ok(new BaseResponse<List<PersonDocumentResponse>>(true, Messages.Found, result));
     }
 
-    [HttpPost("paged")]
-    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonDocumentResponse>>>> GetPagedProjection(
+    [HttpPost("get-paged")]
+    public async Task<ActionResult<BaseResponse<PaginatedResponse<PersonDocumentResponse>>>> GetPaged(
         [FromBody] GetPagedRequest request,
         CancellationToken cancellationToken)
     {
         var predicate = request.Expression?.DeserializeLambdaExpression<PersonDocument>();
 
-        var result = await service.GetPagedProjectionAsync(
+        var result = await service.GetPagedAsync(
             predicate,
             page: request.Page,
             pageSize: request.PageSize,
@@ -61,22 +63,22 @@ public class PersonDocumentController(IPersonDocumentService service) : Controll
         CancellationToken cancellationToken)
     {
         var result = await service.InsertAsync(input, cancellationToken);
-        if (!result.Success)
-            return BadRequest(new BaseResponse<PersonDocumentResponse?>(false, "Falha ao criar documento"));
+        if (result == null)
+            return BadRequest(new BaseResponse<PersonDocumentResponse?>(false, Messages.OperationFailed));
 
-        return CreatedAtAction(nameof(GetById), new { id = result.Item?.Id }, result);
+        return Ok(new BaseResponse<PersonDocumentResponse?>(true, Messages.Created, result));
     }
 
-    [HttpPost("batch")]
+    [HttpPost("insert-batch")]
     public async Task<ActionResult<BaseResponse<List<PersonDocumentResponse>>>> InsertBatch(
         [FromBody] List<PersonDocumentInput> inputs,
         CancellationToken cancellationToken)
     {
         var result = await service.InsertAsync(inputs, cancellationToken);
-        if (!result.Success)
-            return BadRequest(new BaseResponse<List<PersonDocumentResponse>>(false, "Falha ao criar documentos"));
+        if (!result.Any())
+            return BadRequest(new BaseResponse<List<PersonDocumentResponse>>(false, Messages.OperationFailed));
 
-        return Ok(result);
+        return Ok(new BaseResponse<List<PersonDocumentResponse?>>(true, Messages.Created, result!));
     }
 
     [HttpPut("{id:guid}")]
@@ -85,46 +87,46 @@ public class PersonDocumentController(IPersonDocumentService service) : Controll
         CancellationToken cancellationToken)
     {
         if (id != input.Id)
-            return BadRequest(new BaseResponse<PersonDocumentResponse?>(false, "ID inválido"));
+            return NotFound(new BaseResponse<PersonDocumentResponse?>(false, Messages.NotFound));
 
         var result = await service.UpdateAsync(input, cancellationToken);
-        if (!result.Success)
-            return NotFound(
-                new BaseResponse<PersonDocumentResponse?>(false, result.Message ?? "Documento não encontrado"));
+        if (result == null)
+            return BadRequest(
+                new BaseResponse<PersonDocumentResponse?>(false, Messages.OperationFailed));
 
-        return Ok(result);
+        return Ok(new BaseResponse<PersonDocumentResponse?>(true, Messages.Found, result));
     }
 
-    [HttpPut("batch")]
+    [HttpPut("update-batch")]
     public async Task<ActionResult<BaseResponse<List<PersonDocumentResponse>>>> UpdateBatch(
         [FromBody] List<PersonDocumentInput> inputs,
         CancellationToken cancellationToken)
     {
         var result = await service.UpdateAsync(inputs, cancellationToken);
-        if (!result.Success)
-            return NotFound(
-                new BaseResponse<List<PersonDocumentResponse>>(false, result.Message ?? "Nenhum documento encontrado"));
+        if (!result.Any())
+            return BadRequest(
+                new BaseResponse<List<PersonDocumentResponse>>(false, Messages.OperationFailed));
 
-        return Ok(result);
+        return Ok(new BaseResponse<List<PersonDocumentResponse?>>(true, Messages.Found, result!));
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult<BaseResponse<bool>>> Delete(Guid id, CancellationToken cancellationToken)
     {
         var success = await service.HardDeleteAsync(new PersonDocumentInput { Id = id }, cancellationToken);
-        if (!success) return NotFound(new BaseResponse<bool>(false, "Documento não encontrado"));
+        if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
-        return Ok(new BaseResponse<bool>(true, "Documento deletado", true));
+        return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
     }
 
-    [HttpDelete("batch")]
+    [HttpDelete("delete-batch")]
     public async Task<ActionResult<BaseResponse<bool>>> DeleteBatch([FromBody] List<PersonDocumentInput> inputs,
         CancellationToken cancellationToken)
     {
         var success = await service.HardDeleteAsync(inputs, cancellationToken);
-        if (!success) return NotFound(new BaseResponse<bool>(false, "Nenhum documento encontrado para deletar"));
+        if (!success) return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
-        return Ok(new BaseResponse<bool>(true, "Documentos deletados", true));
+        return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
     }
 
     [HttpPost("count")]
@@ -134,6 +136,6 @@ public class PersonDocumentController(IPersonDocumentService service) : Controll
         var predicate = request.Expression.DeserializeLambdaExpression<PersonDocument>();
         var total = await service.CountAsync(predicate, cancellationToken);
 
-        return Ok(new BaseResponse<int>(true, "Contagem realizada", total));
+        return Ok(new BaseResponse<int>(true, Messages.Counted, total));
     }
 }

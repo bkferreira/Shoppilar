@@ -1,5 +1,7 @@
 using Shoppilar.Interfaces.App;
+using Shoppilar.Interfaces.Ext;
 using Shoppilar.Services.App;
+using Shoppilar.Services.Ext;
 
 namespace Shoppilar.Api.DependencyInjection;
 
@@ -7,6 +9,13 @@ public static class ServiceCollection
 {
     public static void AddServices(this IServiceCollection services)
     {
+        services.AddHttpClient<ISmsService, SmsService>((sp, client) =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            client.BaseAddress = new Uri(config["Sms:BaseUrl"]!);
+            client.DefaultRequestHeaders.Add("auth-key", config["Sms:AuthKey"]!);
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
         services.AddScoped<IAdFeaturedService, AdFeaturedService>();
         services.AddScoped<IAdLikeService, AdLikeService>();
         services.AddScoped<IAdPromotionService, AdPromotionService>();

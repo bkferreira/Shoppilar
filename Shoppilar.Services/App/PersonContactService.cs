@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using Shoppilar.Data.App.Models;
 using Shoppilar.DTOs.App.Input;
 using Shoppilar.DTOs.App.Response;
-using Shoppilar.DTOs.Util;
 using Shoppilar.Interfaces;
 using Shoppilar.Interfaces.App;
 
@@ -16,8 +15,8 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new PersonContactResponse(entity);
-        return response;
+        var result = new PersonContactResponse(entity);
+        return result;
     }
 
     public async Task<List<PersonContactResponse>> GetAllAsync(Expression<Func<PersonContact, bool>>? predicate = null,
@@ -25,17 +24,17 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new PersonContactResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new PersonContactResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<PersonContactResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<PersonContactResponse>> GetPagedAsync(
         Expression<Func<PersonContact, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: PersonContactResponse.Projection,
             page: page,
@@ -43,12 +42,11 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<PersonContactResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<PersonContactResponse>(items, totalCount);
+        return results;
     }
 
-    public async Task<BaseResponse<PersonContactResponse?>> InsertAsync(PersonContactInput input,
+    public async Task<PersonContactResponse?> InsertAsync(PersonContactInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = new PersonContact
@@ -61,13 +59,11 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
 
         await repository.InsertAsync(entity, cancellationToken);
 
-        var response =
-            new BaseResponse<PersonContactResponse?>(true, Messages.Created, new PersonContactResponse(entity));
-
-        return response;
+        var result = new PersonContactResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<List<PersonContactResponse>>> InsertAsync(List<PersonContactInput> inputs,
+    public async Task<List<PersonContactResponse>> InsertAsync(List<PersonContactInput> inputs,
         CancellationToken cancellationToken = default)
     {
         var entities = inputs.Select(input => new PersonContact
@@ -80,17 +76,17 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
 
         await repository.InsertAsync(entities, cancellationToken);
 
-        var responses = entities.Select(e => new PersonContactResponse(e)).ToList();
-        return new BaseResponse<List<PersonContactResponse>>(true, Messages.Created, responses);
+        var results = entities.Select(e => new PersonContactResponse(e)).ToList();
+        return results;
     }
 
-    public async Task<BaseResponse<PersonContactResponse?>> UpdateAsync(PersonContactInput input,
+    public async Task<PersonContactResponse?> UpdateAsync(PersonContactInput input,
         CancellationToken cancellationToken = default)
     {
         var entity = await repository.GetAsync(x => x.Id == input.Id, null, cancellationToken);
 
         if (entity == null)
-            return new BaseResponse<PersonContactResponse?>(false, Messages.NotFound);
+            return null;
 
         entity.Standard = input.Standard;
         entity.ContactValue = input.ContactValue;
@@ -99,13 +95,11 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
 
         await repository.UpdateAsync(entity, cancellationToken);
 
-        var response =
-            new BaseResponse<PersonContactResponse?>(true, Messages.Updated, new PersonContactResponse(entity));
-
-        return response;
+        var result = new PersonContactResponse(entity);
+        return result;
     }
 
-    public async Task<BaseResponse<List<PersonContactResponse>>> UpdateAsync(List<PersonContactInput> inputs,
+    public async Task<List<PersonContactResponse>> UpdateAsync(List<PersonContactInput> inputs,
         CancellationToken cancellationToken = default)
     {
         var entities = new List<PersonContact>();
@@ -125,8 +119,8 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
 
         await repository.UpdateAsync(entities, cancellationToken);
 
-        var responses = entities.Select(e => new PersonContactResponse(e)).ToList();
-        return new BaseResponse<List<PersonContactResponse>>(true, Messages.Updated, responses);
+        var results = entities.Select(e => new PersonContactResponse(e)).ToList();
+        return results;
     }
 
     public async Task<bool> HardDeleteAsync(PersonContactInput input,
@@ -137,7 +131,6 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
         if (entity == null) return false;
 
         var result = await repository.HardDeleteAsync(entity, cancellationToken);
-
         return result > 0;
     }
 
@@ -159,13 +152,13 @@ public class PersonContactService(IRepo<PersonContact> repository) : IPersonCont
             return false;
 
         var result = await repository.HardDeleteAsync(entities.ToList(), cancellationToken);
-
         return result > 0;
     }
 
     public async Task<int> CountAsync(Expression<Func<PersonContact, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return await repository.CountAsync(predicate, cancellationToken);
+        var result = await repository.CountAsync(predicate, cancellationToken);
+        return result;
     }
 }

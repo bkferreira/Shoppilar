@@ -15,9 +15,9 @@ public interface ITypeService<T> where T : BaseType
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<TypeResponse?>> InsertAsync(TypeInput input, CancellationToken cancellationToken = default);
+    Task<TypeResponse?> InsertAsync(TypeInput input, CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<TypeResponse?>> UpdateAsync(TypeInput input, CancellationToken cancellationToken = default);
+    Task<TypeResponse?> UpdateAsync(TypeInput input, CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(TypeInput input, CancellationToken cancellationToken = default);
 }

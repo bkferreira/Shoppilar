@@ -15,16 +15,16 @@ public interface IJobService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<JobResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<JobResponse>> GetPagedAsync(
         Expression<Func<Job, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<JobResponse?>> InsertAsync(JobInput input,
+    Task<JobResponse?> InsertAsync(JobInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<JobResponse?>> UpdateAsync(JobInput input,
+    Task<JobResponse?> UpdateAsync(JobInput input,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(JobInput input, CancellationToken cancellationToken = default);

@@ -14,8 +14,8 @@ public class CityService(IRepo<City> repository) : ICityService
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new CityResponse(entity);
-        return response;
+        var result = new CityResponse(entity);
+        return result;
     }
 
     public async Task<List<CityResponse>> GetAllAsync(Expression<Func<City, bool>>? predicate = null,
@@ -23,17 +23,17 @@ public class CityService(IRepo<City> repository) : ICityService
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new CityResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new CityResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<CityResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<CityResponse>> GetPagedAsync(
         Expression<Func<City, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: CityResponse.Projection,
             page: page,
@@ -41,8 +41,7 @@ public class CityService(IRepo<City> repository) : ICityService
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<CityResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<CityResponse>(items, totalCount);
+        return results;
     }
 }

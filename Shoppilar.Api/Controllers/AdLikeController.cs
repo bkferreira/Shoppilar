@@ -11,18 +11,19 @@ namespace Shoppilar.Api.Controllers
     [Route("[controller]")]
     public class AdLikeController(IAdLikeService service) : ControllerBase
     {
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<BaseResponse<AdLikeResponse?>>> GetById(Guid id, string? includeProperties,
-            CancellationToken cancellationToken)
+        [HttpPost("get")]
+        public async Task<ActionResult<BaseResponse<AdLikeResponse?>>> GetAsync([FromBody] GetAllRequest request)
         {
-            var adLike = await service.GetAsync(x => x.Id == id, includeProperties, cancellationToken);
-            if (adLike == null)
-                return NotFound(new BaseResponse<AdLikeResponse?>(false, Messages.NotFound));
+            var predicate = request.Expression.DeserializeLambdaExpression<AdLike>();
+            var includes = request.IncludeProperties;
 
-            return Ok(new BaseResponse<AdLikeResponse?>(true, Messages.Found, adLike));
+            if (predicate == null) return NotFound(new BaseResponse<AdLikeResponse>(false, Messages.NotFound));
+
+            var response = await service.GetAsync(predicate, includes);
+            return Ok(new BaseResponse<AdLikeResponse>(true, Messages.Found, response));
         }
 
-        [HttpPost("all")]
+        [HttpPost("get-all")]
         public async Task<ActionResult<BaseResponse<List<AdLikeResponse>>>> GetAll([FromBody] GetAllRequest request,
             CancellationToken cancellationToken)
         {
@@ -36,14 +37,14 @@ namespace Shoppilar.Api.Controllers
             return Ok(new BaseResponse<List<AdLikeResponse>>(true, Messages.Found, result));
         }
 
-        [HttpPost("paged")]
-        public async Task<ActionResult<BaseResponse<PaginatedResponse<AdLikeResponse>>>> GetPagedProjection(
+        [HttpPost("get-paged")]
+        public async Task<ActionResult<BaseResponse<PaginatedResponse<AdLikeResponse>>>> GetPaged(
             [FromBody] GetPagedRequest request,
             CancellationToken cancellationToken)
         {
             var predicate = request.Expression?.DeserializeLambdaExpression<AdLike>();
 
-            var result = await service.GetPagedProjectionAsync(
+            var result = await service.GetPagedAsync(
                 predicate,
                 page: request.Page,
                 pageSize: request.PageSize,
@@ -61,10 +62,10 @@ namespace Shoppilar.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await service.InsertAsync(input, cancellationToken);
-            if (!result.Success)
+            if (result == null)
                 return BadRequest(new BaseResponse<AdLikeResponse?>(false, Messages.OperationFailed));
 
-            return CreatedAtAction(nameof(GetById), new { id = result.Item?.Id }, result);
+            return Ok(new BaseResponse<AdLikeResponse?>(true, Messages.Found, result));
         }
 
         [HttpDelete("{id:guid}")]
@@ -72,7 +73,7 @@ namespace Shoppilar.Api.Controllers
         {
             var success = await service.HardDeleteAsync(new AdLikeInput { Id = id }, cancellationToken);
             if (!success)
-                return NotFound(new BaseResponse<bool>(false, Messages.NotFound));
+                return BadRequest(new BaseResponse<bool>(false, Messages.OperationFailed));
 
             return Ok(new BaseResponse<bool>(true, Messages.Deleted, true));
         }
@@ -84,7 +85,7 @@ namespace Shoppilar.Api.Controllers
             var predicate = request.Expression.DeserializeLambdaExpression<AdLike>();
             var total = await service.CountAsync(predicate, cancellationToken);
 
-            return Ok(new BaseResponse<int>(true, Messages.Found, total));
+            return Ok(new BaseResponse<int>(true, Messages.Counted, total));
         }
     }
 }

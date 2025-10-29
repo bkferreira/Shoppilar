@@ -14,8 +14,8 @@ public class StateService(IRepo<State> repository) : IStateService
     {
         var entity = await repository.GetAsync(predicate, includeProperties, cancellationToken);
         if (entity == null) return null;
-        var response = new StateResponse(entity);
-        return response;
+        var result = new StateResponse(entity);
+        return result;
     }
 
     public async Task<List<StateResponse>> GetAllAsync(Expression<Func<State, bool>>? predicate = null,
@@ -23,17 +23,17 @@ public class StateService(IRepo<State> repository) : IStateService
         CancellationToken cancellationToken = default)
     {
         var entities = await repository.GetAllAsync(predicate, includeProperties, cancellationToken);
-        var responses = entities.Select(x => new StateResponse(x)).ToList();
-        return responses;
+        var results = entities.Select(x => new StateResponse(x)).ToList();
+        return results;
     }
 
-    public async Task<PaginatedResponse<StateResponse>> GetPagedProjectionAsync(
+    public async Task<PaginatedResponse<StateResponse>> GetPagedAsync(
         Expression<Func<State, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        var (items, totalCount) = await repository.GetPagedProjectionAsync(
+        var (items, totalCount) = await repository.GetPagedAsync(
             predicate: predicate,
             selector: StateResponse.Projection,
             page: page,
@@ -41,8 +41,7 @@ public class StateService(IRepo<State> repository) : IStateService
             cancellationToken: cancellationToken
         );
 
-        var responses = new PaginatedResponse<StateResponse>(items, totalCount);
-
-        return responses;
+        var results = new PaginatedResponse<StateResponse>(items, totalCount);
+        return results;
     }
 }

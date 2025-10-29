@@ -15,16 +15,16 @@ public interface IFeedbackService
         string? includeProperties = null,
         CancellationToken cancellationToken = default);
 
-    Task<PaginatedResponse<FeedbackResponse>> GetPagedProjectionAsync(
+    Task<PaginatedResponse<FeedbackResponse>> GetPagedAsync(
         Expression<Func<Feedback, bool>>? predicate = null,
         int page = 1,
         int pageSize = 10,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<FeedbackResponse?>> InsertAsync(FeedbackInput input,
+    Task<FeedbackResponse?> InsertAsync(FeedbackInput input,
         CancellationToken cancellationToken = default);
 
-    Task<BaseResponse<FeedbackResponse?>> UpdateAsync(FeedbackInput input,
+    Task<FeedbackResponse?> UpdateAsync(FeedbackInput input,
         CancellationToken cancellationToken = default);
 
     Task<bool> HardDeleteAsync(FeedbackInput input, CancellationToken cancellationToken = default);
