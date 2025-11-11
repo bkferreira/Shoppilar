@@ -20,18 +20,6 @@ public partial class RegisterView : ContentPage
         Loaded += RegisterCodeEntryBehavior;
     }
     
-    private async void OnPickDateClicked(object sender, EventArgs e)
-    {
-        await Task.Delay(50);
-        BirthPicker.Focus();
-    }
-
-    private void BirthPicker_DateSelected(object sender, DateChangedEventArgs e)
-    {
-        var vm = BindingContext as RegisterViewModel;
-        vm!.BirthDisplay = e.NewDate.ToString("dd/MM/yyyy");
-    }
-
     private void RegisterCodeEntryBehavior(object? sender, EventArgs e)
     {
         _codeEntries = [Code1Entry, Code2Entry, Code3Entry, Code4Entry, Code5Entry, Code6Entry];

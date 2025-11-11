@@ -60,7 +60,7 @@ public class AdResponse
                 CityName = entity.City!.Name,
                 AdTypeDescription = entity.AdType!.Description,
                 AdSubTypeDescription = entity.AdSubType!.Description,
-                Images = entity.Images.Select(i => new ImageResponse(i)).ToList(),
+                Images = entity.Images.AsQueryable().Select(ImageResponse.Projection).ToList(),
                 Likes = entity.Likes.Count
             };
         }

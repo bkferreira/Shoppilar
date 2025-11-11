@@ -25,7 +25,7 @@ public class EventResponse
             return entity => new EventResponse
             {
                 Id = entity.Id,
-                Images = entity.Images.Select(i => new ImageResponse(i)).ToList()
+                Images = entity.Images.AsQueryable().Select(ImageResponse.Projection).ToList(),
             };
         }
     }

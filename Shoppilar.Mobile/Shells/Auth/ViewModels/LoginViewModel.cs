@@ -26,12 +26,12 @@ public partial class LoginViewModel(
                 return;
             }
 
-            var ret = await authService.LoginAsync(Input);
-            if (ret == null)
-            {
-                await Shell.Current.DisplayAlert("Erro", "Login inválido.", "OK");
-                return;
-            }
+            // var ret = await authService.LoginAsync(Input);
+            // if (ret == null)
+            // {
+            //     await Shell.Current.DisplayAlert("Erro", "Login inválido.", "OK");
+            //     return;
+            // }
 
             await MainThread.InvokeOnMainThreadAsync(() => { Application.Current!.Windows[0].Page = new AppShell(); });
         }
