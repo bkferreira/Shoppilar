@@ -3,6 +3,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Shoppilar.Mobile.Shells.Auth.ViewModels"
+             xmlns:components="clr-namespace:Shoppilar.Mobile.Components"
              xmlns:behaviors="clr-namespace:Shoppilar.Mobile.Behaviors"
              x:Class="Shoppilar.Mobile.Shells.Auth.Views.RegisterView"
              x:DataType="vm:RegisterViewModel"
@@ -10,74 +11,73 @@
 
     <Grid Padding="25">
 
-        <ScrollView x:Name="FormContainer" Opacity="1" TranslationX="0">
-            <VerticalStackLayout Spacing="12" VerticalOptions="Center">
-                <Label Text="Crie sua conta"
-                       FontSize="24"
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center"
-                       Margin="0,0,0,10" />
+        <VerticalStackLayout Spacing="12" VerticalOptions="Center" x:Name="FormContainer" Opacity="1" TranslationX="0">
+            <Label Text="Crie sua conta"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   Margin="0,0,0,10" />
 
-                <Entry Placeholder="Nome completo"
-                       Text="{Binding Input.PersonInput.Name}" />
+            <components:FloatingEntryView
+                Label="Nome completo"
+                Text="{Binding Input.PersonInput.Name, Mode=TwoWay}"
+                Keyboard="Text" />
 
-                <Grid>
-                    <Entry Placeholder="Nascimento"
-                           IsReadOnly="True"
-                           Text="{Binding BirthDisplay}" />
+            <components:FloatingEntryView
+                Label="Nascimento"
+                Text="{Binding BirthDisplay, Mode=TwoWay}"
+                DateValue="{Binding Input.PersonInput.Birth, Mode=TwoWay}"
+                IsDateMode="True" />
 
-                    <DatePicker x:Name="BirthPicker"
-                                Date="{Binding Input.PersonInput.Birth}"
-                                IsVisible="False"
-                                DateSelected="BirthPicker_DateSelected" />
+            <components:FloatingEntryView
+                Label="Usuário"
+                Text="{Binding Input.UserName, Mode=TwoWay}"
+                Keyboard="Text" />
 
-                    <Button BackgroundColor="Transparent"
-                            Clicked="OnPickDateClicked" />
-                </Grid>
+            <components:FloatingEntryView
+                Label="Celular"
+                Text="{Binding Input.PhoneNumber}"
+                Keyboard="Telephone">
+                <components:FloatingEntryView.InputBehaviors>
+                    <behaviors:PhoneMaskBehavior />
+                </components:FloatingEntryView.InputBehaviors>
+            </components:FloatingEntryView>
 
+            <components:FloatingEntryView
+                Label="Email"
+                Text="{Binding Input.PhoneNumber}"
+                Keyboard="Telephone">
+                <components:FloatingEntryView.InputBehaviors>
+                    <behaviors:EmailNormalizeBehavior />
+                </components:FloatingEntryView.InputBehaviors>
+            </components:FloatingEntryView>
 
-                <Entry Placeholder="Usuário"
-                       Text="{Binding Input.UserName}" />
+            <components:FloatingEntryView
+                Label="Senha"
+                Text="{Binding Input.Password, Mode=TwoWay}"
+                IsPassword="True"
+                Keyboard="Text" />
 
-                <Entry Placeholder="Celular"
-                       Text="{Binding Input.PhoneNumber}"
-                       Keyboard="Telephone">
-                    <Entry.Behaviors>
-                        <behaviors:PhoneMaskBehavior />
-                    </Entry.Behaviors>
-                </Entry>
+            <components:FloatingEntryView
+                Label="Confimar senha"
+                Text="{Binding ConfirmPassword, Mode=TwoWay}"
+                IsPassword="True"
+                Keyboard="Text" />
 
-                <Entry Placeholder="E-mail"
-                       Text="{Binding Input.Email}"
-                       Keyboard="Email">
-                    <Entry.Behaviors>
-                        <behaviors:EmailNormalizeBehavior />
-                    </Entry.Behaviors>
-                </Entry>
+            <Button Text="Continue"
+                    Command="{Binding ContinueCommand}"
+                    BackgroundColor="#255E77"
+                    TextColor="White"
+                    CornerRadius="8"
+                    Margin="0,20,0,0" />
 
-                <Entry Placeholder="Senha"
-                       Text="{Binding Input.Password}"
-                       IsPassword="True" />
-
-                <Entry Placeholder="Confirmar senha"
-                       Text="{Binding ConfirmPassword}"
-                       IsPassword="True" />
-
-                <Button Text="Continue"
-                        Command="{Binding ContinueCommand}"
-                        BackgroundColor="#007BFF"
-                        TextColor="White"
-                        CornerRadius="8"
-                        Margin="0,20,0,0" />
-
-                <Button Text="Voltar"
-                        Command="{Binding GoToLoginCommand}"
-                        BackgroundColor="Transparent"
-                        TextColor="#007BFF"
-                        CornerRadius="8"
-                        HeightRequest="40" />
-            </VerticalStackLayout>
-        </ScrollView>
+            <Button Text="Voltar"
+                    Command="{Binding GoToLoginCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#255E77"
+                    CornerRadius="8"
+                    HeightRequest="40" />
+        </VerticalStackLayout>
 
         <Grid x:Name="CodeContainer"
               Opacity="0"
@@ -116,14 +116,14 @@
 
                 <Button Text="Verificar código"
                         Command="{Binding VerifyCodeCommand}"
-                        BackgroundColor="#007BFF"
+                        BackgroundColor="#255E77"
                         TextColor="White"
                         CornerRadius="8" />
 
                 <Button Text="Voltar"
                         Command="{Binding GoBackCommand}"
                         BackgroundColor="Transparent"
-                        TextColor="#007BFF" />
+                        TextColor="#255E77" />
             </VerticalStackLayout>
         </Grid>
 
@@ -132,7 +132,7 @@
               TranslationX="400">
             <VerticalStackLayout VerticalOptions="CenterAndExpand" Spacing="20">
                 <Image Source="success.png"
-                       HorizontalOptions="Center" 
+                       HorizontalOptions="Center"
                        HeightRequest="200"
                        Aspect="AspectFit" />
 
@@ -144,9 +144,9 @@
 
                 <Button Text="OK"
                         Command="{Binding GoToLoginCommand}"
-                        BackgroundColor="#007BFF"
+                        BackgroundColor="#255E77"
                         TextColor="White"
-                        CornerRadius="8"/>
+                        CornerRadius="8" />
             </VerticalStackLayout>
         </Grid>
 

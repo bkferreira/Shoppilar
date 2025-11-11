@@ -34,8 +34,8 @@ public class PersonResponse
                 Id = entity.Id,
                 Name = entity.Name,
                 Birth = entity.Birth.ToString("dd/MM/yyyy"),
-                PersonTypeDesc = entity.PersonType!.Description,
-                Image = entity.Image!.Url
+                PersonTypeDesc = entity.PersonType != null ? entity.PersonType.Description :  null,
+                Image = entity.Image != null ? entity.Image.Url : null
             };
         }
     }

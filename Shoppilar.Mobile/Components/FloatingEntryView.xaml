@@ -18,10 +18,13 @@
                    Text="{Binding Label, Source={x:Reference root}}"
                    FontSize="14"
                    TextColor="#BBB"
-                   TranslationY="14"
                    InputTransparent="True"
-                   VerticalOptions="Start"
-                   HorizontalOptions="Start" />
+                   HorizontalOptions="Start"
+                   VerticalOptions="Center"
+                   TranslationX="2"
+                   TranslationY="0"
+                   AnchorX="0"
+                   AnchorY="0.5" />
 
             <!-- Campo de entrada -->
             <Entry x:Name="InputEntry"
@@ -29,6 +32,7 @@
                    Text="{Binding Text, Source={x:Reference root}}"
                    IsPassword="{Binding IsPassword, Source={x:Reference root}}"
                    Keyboard="{Binding Keyboard, Source={x:Reference root}}"
+                   IsReadOnly="{Binding IsDateMode, Source={x:Reference root}}"
                    BackgroundColor="Transparent"
                    FontSize="16"
                    Margin="0,5,0,-10"
@@ -37,6 +41,20 @@
                    TextChanged="OnTextChanged"
                    Focused="OnFocused"
                    Unfocused="OnUnfocused" />
+
+            <!-- DatePicker oculto -->
+            <DatePicker x:Name="HiddenDatePicker"
+                        Grid.Column="0"
+                        IsVisible="False"
+                        Date="{Binding DateValue, Source={x:Reference root}}"
+                        DateSelected="OnDateSelected" />
+
+            <!-- Botão transparente sobre o Entry para abrir o DatePicker -->
+            <Button x:Name="PickerButton"
+                    Grid.Column="0"
+                    BackgroundColor="Transparent"
+                    IsVisible="{Binding IsDateMode, Source={x:Reference root}}"
+                    Clicked="OnPickDateClicked" />
 
             <!-- Ícone de alternância de senha -->
             <Image x:Name="PasswordIcon"
